@@ -3,1259 +3,724 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>TIER ONE: CLASSIFIED</title>
+<title>Tactical Strike: Mobile Arena</title>
 <style>
-:root{
-  --bg:#05080a;--panel:#0d1318;--border:#1c2e3a;
-  --txt:#9ec8e0;--dim:#2e4a5a;
-  --G:#00ff88;--Y:#ffd700;--O:#ff8c00;--R:#ff3030;--B:#00aaff;--C:#00ffcc;
-  --W:#e0f0ff;
-}
-*{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-tap-highlight-color:transparent}
-body{font-family:'Courier New',monospace;background:var(--bg);color:var(--txt);
-  height:100dvh;overflow:hidden;display:flex;flex-direction:column;
-  max-width:640px;margin:0 auto;position:relative}
-body::after{content:'';position:fixed;inset:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);
-  pointer-events:none;z-index:999}
-
-.screen{display:none;flex-direction:column;height:100%;padding:10px;gap:6px;overflow:hidden}
-.screen.active{display:flex}
-
-/* ── MENU ── */
-#sc-menu{justify-content:center;align-items:center;text-align:center;gap:14px}
-.logo{padding:16px 28px;position:relative}
-.logo::before,.logo::after{content:'';position:absolute;width:100%;height:2px;
-  left:0;background:linear-gradient(90deg,transparent,var(--B),transparent)}
-.logo::before{top:0} .logo::after{bottom:0}
-.logo-t1{font-size:1.1rem;color:var(--dim);letter-spacing:6px;margin-bottom:4px}
-.logo-t2{font-size:2.4rem;font-weight:bold;color:var(--G);letter-spacing:4px;
-  text-shadow:0 0 20px var(--G)}
-.logo-t3{font-size:.7rem;color:var(--R);letter-spacing:8px;margin-top:4px}
-.classified-stamp{font-size:.6rem;border:1px solid var(--R);color:var(--R);
-  padding:2px 8px;letter-spacing:4px;display:inline-block;transform:rotate(-2deg);
-  margin-top:8px;text-shadow:0 0 8px var(--R)}
-.menu-btns{display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px}
-.version{font-size:.6rem;color:var(--dim);letter-spacing:2px}
-
-/* ── OPERATOR SELECT ── */
-.ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1}
-.op-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;
-  padding:12px 10px;cursor:pointer;transition:all .15s;text-align:left}
-.op-card:active{transform:scale(.97)}
-.op-card.selected{border-color:var(--B);background:#0a1520;box-shadow:0 0 12px rgba(0,170,255,.2)}
-.op-codename{font-size:.85rem;font-weight:bold;letter-spacing:2px;margin-bottom:4px}
-.op-class{font-size:.65rem;color:var(--dim);letter-spacing:2px;margin-bottom:8px}
-.op-stat{font-size:.65rem;margin-bottom:3px;display:flex;justify-content:space-between}
-.op-ability{font-size:.62rem;color:var(--Y);margin-top:8px;line-height:1.5}
-.op-icon{font-size:2rem;margin-bottom:6px;display:block}
-
-/* ── LOADOUT ── */
-.loadout-section{background:var(--panel);border:1px solid var(--border);
-  border-radius:4px;padding:8px 10px;flex-shrink:0}
-.ls-title{font-size:.65rem;color:var(--dim);letter-spacing:3px;margin-bottom:6px}
-.weapon-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.wep-btn{background:var(--bg);border:1px solid var(--border);border-radius:3px;
-  padding:6px 8px;text-align:left;cursor:pointer;transition:all .1s}
-.wep-btn:active{transform:scale(.97)}
-.wep-btn.sel{border-color:var(--G);background:#001a0a}
-.wep-name{font-size:.72rem;font-weight:bold;color:var(--W);letter-spacing:1px}
-.wep-stat{font-size:.6rem;color:var(--dim);margin-top:2px}
-.equip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-.eq-btn{background:var(--bg);border:1px solid var(--border);border-radius:3px;
-  padding:5px 6px;text-align:center;cursor:pointer;font-size:.65rem;transition:all .1s}
-.eq-btn:active{transform:scale(.97)}
-.eq-btn.sel{border-color:var(--Y);background:#1a1400}
-
-/* ── MISSION SELECT ── */
-.missions-list{display:flex;flex-direction:column;gap:7px;flex:1;overflow-y:auto}
-.mission-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;
-  padding:10px 12px;cursor:pointer;transition:all .1s;position:relative;overflow:hidden}
-.mission-card:active{transform:scale(.99)}
-.mission-card.locked{opacity:.4;cursor:not-allowed}
-.mission-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
-.mission-card.op1::before{background:#ff8c00}
-.mission-card.op2::before{background:#00aaff}
-.mission-card.op3::before{background:#ff3030}
-.mission-card.op4::before{background:#b39ddb}
-.mission-card.op5::before{background:#ffd700}
-.mc-loc{font-size:.6rem;color:var(--dim);letter-spacing:3px;margin-bottom:2px}
-.mc-name{font-size:.9rem;font-weight:bold;letter-spacing:2px;margin-bottom:4px}
-.mc-obj{font-size:.68rem;color:var(--txt);line-height:1.4;margin-bottom:6px}
-.mc-diff{font-size:.6rem;letter-spacing:2px}
-.mc-stars{color:var(--Y)}
-.lock-icon{position:absolute;top:8px;right:10px;font-size:.8rem;color:var(--dim)}
-
-/* ── BRIEFING ── */
-#sc-brief{justify-content:flex-start;gap:8px}
-.brief-header{background:var(--panel);border:1px solid var(--border);
-  border-radius:4px;padding:8px 12px;flex-shrink:0}
-.brief-loc{font-size:.65rem;color:var(--dim);letter-spacing:4px}
-.brief-op{font-size:1.1rem;font-weight:bold;color:var(--Y);letter-spacing:3px;margin:3px 0}
-.brief-cls{font-size:.65rem;color:var(--R);letter-spacing:2px}
-.brief-intel{background:#030608;border:1px solid var(--border);border-radius:4px;
-  padding:10px;flex:1;overflow-y:auto;font-size:.78rem;line-height:1.7;color:var(--txt)}
-.intel-cursor{display:inline-block;width:7px;height:13px;background:var(--B);
-  vertical-align:middle;animation:blink .6s infinite}
-@keyframes blink{50%{opacity:0}}
-.obj-list{background:var(--panel);border:1px solid var(--border);border-radius:4px;
-  padding:8px 12px;flex-shrink:0}
-.obj-title{font-size:.6rem;color:var(--dim);letter-spacing:3px;margin-bottom:6px}
-.obj-item{font-size:.72rem;margin-bottom:3px;display:flex;gap:8px}
-.obj-done{color:var(--G)} .obj-fail{color:var(--R)} .obj-pend{color:var(--txt)}
-
-/* ── COMBAT ── */
-#sc-combat{gap:5px}
-.combat-hud{background:var(--panel);border:1px solid var(--border);
-  border-radius:3px;padding:6px 10px;flex-shrink:0}
-.hud-row{display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:4px;font-size:.68rem}
-.hud-row:last-child{margin-bottom:0}
-.stat-bar{display:inline-flex;align-items:center;gap:5px}
-.bar-bg{width:80px;height:10px;background:#030608;border:1px solid #1a2a33;
-  border-radius:1px;overflow:hidden;display:inline-block;vertical-align:middle}
-.bar-fill{height:100%;transition:width .3s ease}
-.bar-hp{background:linear-gradient(90deg,#cc0000,#ff3030)}
-.bar-armor{background:linear-gradient(90deg,#0066aa,#00aaff)}
-.bar-fill::after{content:'';display:block;height:35%;background:rgba(255,255,255,.15)}
-.hud-ammo{font-size:.72rem;color:var(--Y);font-weight:bold}
-.hud-equip{font-size:.65rem;color:var(--O)}
-.hud-stage{font-size:.65rem;color:var(--dim);letter-spacing:2px}
-.hud-score{font-size:.65rem;color:var(--G)}
-
-.sitrep{background:#030608;border:1px solid var(--border);border-radius:3px;
-  padding:7px 10px;flex-shrink:0}
-.sitrep-title{font-size:.6rem;color:var(--dim);letter-spacing:3px;margin-bottom:6px}
-.enemy-row{display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:4px;font-size:.7rem}
-.enemy-name{width:100px;letter-spacing:1px}
-.enemy-hp-bar{flex:1;height:8px;background:#030608;border:1px solid #1a1a1a;
-  border-radius:1px;overflow:hidden;margin:0 8px}
-.enemy-hp-fill{height:100%;background:linear-gradient(90deg,#882200,#ff4400);transition:width .3s}
-.enemy-status{font-size:.6rem;width:60px;text-align:right}
-.enemy-status.cover{color:var(--B)} .enemy-status.down{color:var(--R)}
-.enemy-status.exposed{color:var(--O)} .enemy-status.suppressed{color:var(--Y)}
-
-.combat-log{flex:1;background:#030608;border:1px solid var(--border);
-  border-radius:3px;padding:6px 8px;overflow-y:auto;
-  font-size:.76rem;display:flex;flex-direction:column-reverse;min-height:0}
-.cle{padding:2px 0;border-bottom:1px solid #090f12;line-height:1.4}
-.lnorm{color:var(--txt)} .lkill{color:var(--G);font-weight:bold}
-.ldmg{color:var(--R)} .linfo{color:var(--B)} .lsys{color:var(--C);font-weight:bold;letter-spacing:1px}
-.levent{color:var(--Y)} .lhead{color:var(--Y);font-weight:bold} .ldim{color:var(--dim)}
-
-.tactics{display:grid;grid-template-columns:1fr 1fr;gap:5px;flex-shrink:0}
-.tac-btn{background:var(--panel);border:1px solid var(--border);border-radius:3px;
-  padding:7px 8px;text-align:left;cursor:pointer;font-family:'Courier New',monospace;
-  font-size:.68rem;touch-action:manipulation;transition:transform .1s;position:relative}
-.tac-btn:active:not(.off){transform:scale(.97)}
-.tac-btn.off{opacity:.25;cursor:not-allowed}
-.tac-fire{border-color:#2a1a1a} .tac-fire:active:not(.off){background:#0f0404;border-color:var(--R)}
-.tac-cover{border-color:#1a1a3a} .tac-cover:active:not(.off){background:#04040f;border-color:var(--B)}
-.tac-flank{border-color:#2a2a0a} .tac-flank:active:not(.off){background:#0f0f04;border-color:var(--Y)}
-.tac-nade{border-color:#2a1a0a} .tac-nade:active:not(.off){background:#0f0804;border-color:var(--O)}
-.tac-special{border-color:#0a2a2a} .tac-special:active:not(.off){background:#040f0f;border-color:var(--C)}
-.tac-reload{border-color:#1a2a1a} .tac-reload:active:not(.off){background:#040f04;border-color:var(--G)}
-.tac-secondary{border-color:#1a1a2a} .tac-secondary:active:not(.off){background:#04040f;border-color:var(--B)}
-.tac-melee{border-color:#3a1a1a} .tac-melee:active:not(.off){background:#140404;border-color:'#ff4444'}
-.tb-name{font-weight:bold;font-size:.72rem;letter-spacing:1px;color:var(--W)}
-.tb-sub{color:var(--dim);font-size:.6rem;margin-top:2px}
-.tb-key{position:absolute;top:4px;right:5px;font-size:.55rem;color:var(--dim);
-  border:1px solid var(--border);padding:1px 3px;border-radius:1px}
-.incover-banner{text-align:center;font-size:.68rem;color:var(--B);letter-spacing:2px;
-  padding:2px;animation:blink 1s infinite}
-
-/* ── DEBRIEF ── */
-#sc-debrief{justify-content:center;align-items:center;text-align:center;gap:10px}
-.debrief-header{font-size:.7rem;color:var(--dim);letter-spacing:4px}
-.debrief-result{font-size:1.8rem;font-weight:bold;letter-spacing:4px}
-.debrief-stars{font-size:2rem;margin:6px 0}
-.debrief-stats{display:grid;grid-template-columns:1fr 1fr;gap:5px;
-  width:100%;max-width:400px;text-align:left}
-.ds{font-size:.72rem}
-.ds-lbl{color:var(--dim)} .ds-val{color:var(--Y);font-weight:bold}
-.kill-feed{font-size:.7rem;color:var(--G);line-height:1.6;
-  max-width:400px;margin:6px 0;text-align:left}
-
-/* MODALS */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.94);display:none;
-  flex-direction:column;justify-content:center;align-items:center;z-index:200;padding:14px}
-.modal.show{display:flex}
-.mbox{background:var(--panel);border:1px solid var(--border);border-radius:5px;
-  padding:18px;max-width:460px;width:100%;text-align:center}
-.m-icon{font-size:2rem;margin-bottom:8px}
-.m-title{font-size:1rem;font-weight:bold;letter-spacing:2px;margin-bottom:10px}
-.m-desc{font-size:.8rem;line-height:1.65;margin-bottom:14px;color:var(--txt)}
-.m-choices{display:flex;flex-direction:column;gap:7px}
-
-/* BUTTONS */
-.btn{background:var(--panel);color:var(--txt);border:1px solid var(--border);
-  border-radius:3px;padding:10px 16px;font-family:'Courier New',monospace;
-  font-size:.8rem;font-weight:bold;letter-spacing:1px;cursor:pointer;
-  text-transform:uppercase;touch-action:manipulation;transition:transform .1s;width:100%}
-.btn:active{transform:scale(.98)}
-.bg{border-color:var(--G);color:var(--G)} .bg:active{background:#001800}
-.br{border-color:var(--R);color:var(--R)} .br:active{background:#180000}
-.bb{border-color:var(--B);color:var(--B)} .bb:active{background:#00091a}
-.by{border-color:var(--Y);color:var(--Y)} .by:active{background:#1a1400}
-.bo{border-color:var(--O);color:var(--O)} .bo:active{background:#1a0800}
-.bc{border-color:var(--C);color:var(--C)} .bc:active{background:#001a14}
-
-/* FLASH */
-#flash{position:fixed;inset:0;pointer-events:none;z-index:500;opacity:0;transition:opacity .07s}
-
-/* section headers */
-.sec-hdr{font-size:.65rem;color:var(--dim);letter-spacing:4px;flex-shrink:0}
-.sec-hdr span{color:var(--B)}
-
-::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-thumb{background:var(--border)}
+:root{--bg:#0b0c10;--panel:#1a1e26;--gold:#c5a059;--red:#ff3333;--orange:#ff6600;--green:#33cc55}
+*{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-user-select:none;touch-action:none}
+body{font-family:'Arial Black',sans-serif;background:var(--bg);color:#fff;
+  display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+#hud-top{display:flex;justify-content:space-between;align-items:center;
+  padding:8px 14px;background:var(--panel);border-bottom:2px solid var(--gold);
+  font-size:.75rem;letter-spacing:1px;flex-shrink:0;height:40px}
+.hud-g{color:var(--gold);font-weight:bold}
+#wave-txt{letter-spacing:3px}
+#streak-alert{color:var(--orange);font-size:.65rem;letter-spacing:1px;
+  animation:pu 1s infinite;display:none}
+@keyframes pu{50%{opacity:.3}}
+#game-area{flex:1;position:relative;overflow:hidden;min-height:0}
+canvas{width:100%;height:100%;display:block}
+#hud-bot{background:var(--panel);border-top:2px solid var(--gold);
+  padding:7px 10px;display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.hr{display:flex;align-items:center;gap:7px}
+#hp-bg{flex:1;height:13px;background:#111;border:1px solid #444;border-radius:2px;overflow:hidden}
+#hp-fill{height:100%;background:linear-gradient(90deg,#22aa44,#33cc55);transition:width .2s,background .3s}
+#hp-txt{font-size:.7rem;color:var(--red);width:40px;text-align:right;flex-shrink:0}
+.wpn-row{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.wb{background:#0d0f14;color:#888;border:1px solid #333;padding:5px 2px;
+  font-size:.52rem;border-radius:3px;cursor:pointer;letter-spacing:.5px;
+  font-family:inherit;line-height:1.3;text-align:center}
+.wb.on{border-color:var(--gold);background:#1a1500;color:var(--gold)}
+.wb.lk{opacity:.3;cursor:not-allowed}
+#reload-btn{background:var(--orange);color:#fff;border:none;padding:7px 10px;
+  font-size:.72rem;border-radius:3px;cursor:pointer;font-family:inherit;letter-spacing:1px;flex-shrink:0}
+#nade-btn{background:#101a10;color:var(--green);border:1px solid var(--green);
+  padding:7px 10px;font-size:.7rem;border-radius:3px;cursor:pointer;font-family:inherit;flex-shrink:0}
+#ammo-d{font-size:.82rem;color:var(--gold);margin-left:auto;letter-spacing:1px;flex-shrink:0}
+.overlay{position:fixed;inset:0;background:rgba(11,12,16,.96);display:flex;
+  flex-direction:column;justify-content:center;align-items:center;
+  z-index:100;padding:20px;text-align:center;gap:12px}
+.overlay h1{color:var(--gold);font-size:1.8rem;letter-spacing:3px}
+.overlay p{color:#888;font-size:.88rem}
+.mb{display:flex;flex-direction:column;gap:9px;width:100%;max-width:280px}
+.mb button{background:#111;color:#ddd;border:1px solid #333;padding:13px;
+  font-family:inherit;font-size:.82rem;border-radius:4px;cursor:pointer;letter-spacing:1px}
+.ob{background:var(--orange);color:#fff;border:none;padding:13px 28px;
+  font-family:inherit;font-size:.88rem;border-radius:4px;cursor:pointer;
+  letter-spacing:2px;width:100%;max-width:280px;margin-top:4px}
+#wc-ov,#go-ov{display:none}
+#wc-ov h1{color:var(--green)}
+#go-ov h1{color:var(--red)}
+#spop{position:fixed;top:46px;left:50%;transform:translateX(-50%);
+  background:rgba(255,102,0,.92);color:#fff;padding:7px 18px;font-size:.78rem;
+  letter-spacing:2px;border-radius:3px;display:none;z-index:50;
+  animation:pi .3s ease}
+@keyframes pi{from{transform:translateX(-50%) scale(.7);opacity:0}}
 </style>
 </head>
 <body>
 
-<div id="flash"></div>
-
-<!-- ══ MENU ══ -->
-<div id="sc-menu" class="screen active">
-  <div class="logo">
-    <div class="logo-t1">SPECIAL OPERATIONS COMMAND</div>
-    <div class="logo-t2">TIER ONE</div>
-    <div class="logo-t3">CLASSIFIED</div>
-  </div>
-  <div class="classified-stamp">TOP SECRET · SCI · NOFORN</div>
-  <div class="menu-btns">
-    <button class="btn bg" onclick="showScreen('sc-operator')">DEPLOY NOW</button>
-    <button class="btn bb" onclick="showScreen('sc-missions')">MISSION SELECT</button>
-    <button class="btn" style="border-color:var(--dim)" onclick="showHelp()">INTEL REPORT</button>
-  </div>
-  <div id="menu-hs" class="version">BEST SCORE: —</div>
-  <div class="version">v2.0 · DELTA FORCE UNIT</div>
+<div id="hud-top">
+  <div>SCR: <span id="sv" class="hud-g">0</span></div>
+  <div id="wave-txt">WAVE 1</div>
+  <div id="streak-alert">📡 UAV ACTIVE</div>
+  <div>×<span id="stv" class="hud-g">0</span></div>
 </div>
 
-<!-- ══ OPERATOR SELECT ══ -->
-<div id="sc-operator" class="screen">
-  <div class="sec-hdr">STEP 1 / 3 &nbsp;·&nbsp; <span>SELECT OPERATOR</span></div>
-  <div class="ops-grid" id="ops-grid"></div>
-  <button class="btn bb" id="op-confirm" onclick="confirmOp()" style="flex-shrink:0">CONFIRM OPERATOR →</button>
-</div>
+<div id="game-area"><canvas id="gc"></canvas></div>
 
-<!-- ══ LOADOUT ══ -->
-<div id="sc-loadout" class="screen">
-  <div class="sec-hdr">STEP 2 / 3 &nbsp;·&nbsp; <span>CONFIGURE LOADOUT</span></div>
-  <div class="loadout-section" style="flex-shrink:0">
-    <div class="ls-title">PRIMARY WEAPON</div>
-    <div class="weapon-grid" id="primary-grid"></div>
+<div id="hud-bot">
+  <div class="hr">
+    <span style="font-size:.65rem;color:#888;flex-shrink:0">HP</span>
+    <div id="hp-bg"><div id="hp-fill" style="width:100%"></div></div>
+    <span id="hp-txt">100</span>
   </div>
-  <div class="loadout-section" style="flex-shrink:0">
-    <div class="ls-title">SECONDARY / SIDEARM</div>
-    <div class="weapon-grid" id="secondary-grid"></div>
-  </div>
-  <div class="loadout-section" style="flex-shrink:0">
-    <div class="ls-title">EQUIPMENT PACKAGE</div>
-    <div class="equip-grid" id="equip-grid"></div>
-  </div>
-  <button class="btn bg" onclick="confirmLoadout()" style="flex-shrink:0;margin-top:auto">LOCK IN LOADOUT →</button>
-</div>
-
-<!-- ══ MISSION SELECT ══ -->
-<div id="sc-missions" class="screen">
-  <div class="sec-hdr">STEP 3 / 3 &nbsp;·&nbsp; <span>SELECT MISSION</span></div>
-  <div class="missions-list" id="missions-list"></div>
-</div>
-
-<!-- ══ BRIEFING ══ -->
-<div id="sc-brief" class="screen">
-  <div class="brief-header">
-    <div id="brief-loc" class="brief-loc">CLASSIFIED LOCATION</div>
-    <div id="brief-op-name" class="brief-op">OPERATION: ???</div>
-    <div id="brief-cls" class="brief-cls">AUTHORIZATION LEVEL: LEVEL 5</div>
-  </div>
-  <div id="brief-intel" class="brief-intel"></div>
-  <div class="obj-list" id="obj-list">
-    <div class="obj-title">MISSION OBJECTIVES</div>
-    <div id="obj-items"></div>
-  </div>
-  <button class="btn br" onclick="startMission()" style="flex-shrink:0">INITIATE DEPLOYMENT ▶</button>
-</div>
-
-<!-- ══ COMBAT ══ -->
-<div id="sc-combat" class="screen">
-  <div class="combat-hud" id="combat-hud">
-    <div class="hud-row">
-      <div class="stat-bar">
-        <span style="font-size:.62rem;color:var(--dim);width:20px">HP</span>
-        <div class="bar-bg"><div id="bar-hp" class="bar-fill bar-hp" style="width:100%"></div></div>
-        <span id="val-hp" style="font-size:.65rem;width:26px">100</span>
-      </div>
-      <div class="stat-bar">
-        <span style="font-size:.62rem;color:var(--dim);width:34px">ARMOR</span>
-        <div class="bar-bg"><div id="bar-armor" class="bar-fill bar-armor" style="width:0%"></div></div>
-        <span id="val-armor" style="font-size:.65rem;width:26px">0</span>
-      </div>
-      <span id="hud-stage" class="hud-stage">STAGE 1/4</span>
-    </div>
-    <div class="hud-row">
-      <span id="hud-ammo" class="hud-ammo">M4A1 [30/90]</span>
-      <span id="hud-sec-ammo" style="font-size:.65rem;color:var(--B)">M1911 [7]</span>
-      <span id="hud-equip" class="hud-equip">FRAG×2 FLASH×1</span>
-      <span id="hud-score" class="hud-score">SCR 0</span>
-    </div>
-    <div id="cover-banner" class="incover-banner" style="display:none">[ IN COVER — DAMAGE REDUCED 40% ]</div>
-    <div id="spec-cd" style="font-size:.62rem;color:var(--C);display:none"></div>
-  </div>
-
-  <div class="sitrep">
-    <div class="sitrep-title">SITREP — <span id="stage-loc" style="color:var(--Y)">STAGE</span></div>
-    <div id="enemy-list"></div>
-  </div>
-
-  <div id="combat-log" class="combat-log">
-    <div class="cle"><span class="lsys">MISSION INITIATED. ENGAGE.</span></div>
-  </div>
-
-  <div class="tactics" id="tactics-grid">
-    <button class="tac-btn tac-fire" onclick="tac('fire')"><div class="tb-name">ENGAGE</div><div class="tb-sub">Primary fire</div><span class="tb-key">1</span></button>
-    <button class="tac-btn tac-cover" onclick="tac('cover')"><div class="tb-name">TAKE COVER</div><div class="tb-sub">-40% dmg taken</div><span class="tb-key">2</span></button>
-    <button class="tac-btn tac-flank" onclick="tac('flank')"><div class="tb-name">FLANK</div><div class="tb-sub">+50% dmg dealt</div><span class="tb-key">3</span></button>
-    <button class="tac-btn tac-nade" id="btn-nade" onclick="tac('nade')"><div class="tb-name">THROW NADE</div><div class="tb-sub">Area damage</div><span class="tb-key">4</span></button>
-    <button class="tac-btn tac-special" id="btn-spec" onclick="tac('special')"><div class="tb-name" id="spec-name">AIRSTRIKE</div><div class="tb-sub" id="spec-sub">Call fire support</div><span class="tb-key">5</span></button>
-    <button class="tac-btn tac-reload" id="btn-reload" onclick="tac('reload')"><div class="tb-name">RELOAD</div><div class="tb-sub">Top off ammo</div><span class="tb-key">6</span></button>
-    <button class="tac-btn tac-secondary" onclick="tac('secondary')"><div class="tb-name">SIDEARM</div><div class="tb-sub">Draw pistol</div><span class="tb-key">7</span></button>
-    <button class="tac-btn tac-melee" onclick="tac('melee')"><div class="tb-name">MELEE</div><div class="tb-sub">CQC takedown</div><span class="tb-key">Q</span></button>
+  <div class="hr"><div class="wpn-row" id="wpn-row"></div></div>
+  <div class="hr">
+    <button id="reload-btn" onclick="doReload()">RELOAD</button>
+    <button id="nade-btn" onclick="doNade()">💣 ×<span id="nc">3</span></button>
+    <span id="ammo-d">M4A1 30/120</span>
   </div>
 </div>
 
-<!-- ══ DEBRIEF ══ -->
-<div id="sc-debrief" class="screen">
-  <div class="debrief-header">MISSION DEBRIEF</div>
-  <div id="debrief-result" class="debrief-result" style="color:var(--G)">MISSION SUCCESS</div>
-  <div id="debrief-stars" class="debrief-stars"></div>
-  <div class="debrief-stats" id="debrief-stats"></div>
-  <div id="kill-feed" class="kill-feed"></div>
-  <div style="display:flex;gap:8px;width:100%;max-width:400px;margin-top:4px">
-    <button class="btn bg" onclick="nextMission()" id="btn-next-mission">NEXT MISSION</button>
-    <button class="btn" style="border-color:var(--dim)" onclick="showScreen('sc-menu')">MAIN MENU</button>
+<div id="menu-ov" class="overlay">
+  <h1>TACTICAL STRIKE</h1>
+  <p>SELECT DEPLOYMENT ZONE</p>
+  <div class="mb">
+    <button style="border-color:#ff3333" onclick="startGame('shipment')">SHIPMENT — CHAOS</button>
+    <button style="border-color:#ff9933" onclick="startGame('rust')">RUST — DESERT ARENA</button>
+    <button style="border-color:#33aaff" onclick="startGame('crash')">CRASH — URBAN OPS</button>
   </div>
+  <p id="hs-disp" style="color:var(--gold);font-size:.72rem;margin-top:6px"></p>
 </div>
 
-<!-- INTEL MODAL -->
-<div id="modal-intel" class="modal">
-  <div class="mbox">
-    <div class="m-icon">📋</div>
-    <div class="m-title" style="color:var(--B)">INTEL REPORT</div>
-    <div class="m-desc" style="text-align:left">
-      <b style="color:var(--Y)">CONTROLS</b><br>
-      Keys 1–7 / Q for tactics on desktop.<br>
-      Tap buttons on mobile.<br><br>
-      <b style="color:var(--Y)">TACTICS</b><br>
-      ENGAGE — fire at target, balanced<br>
-      TAKE COVER — defensive, reduce damage<br>
-      FLANK — risky, massive damage bonus<br>
-      THROW NADE — area damage all enemies<br>
-      SPECIAL — operator unique ability (cooldown)<br>
-      RELOAD — refill primary from reserve<br>
-      SIDEARM — pistol, infinite ammo<br>
-      MELEE — instant kill CQC, close range only<br><br>
-      <b style="color:var(--Y)">STATUS</b><br>
-      Enemies in COVER take -50% damage.<br>
-      Use FLANK or FRAG to flush them out.<br>
-      Headshots (random) deal 2× damage.<br>
-      Keep HP above 30 — below 30 is critical.
-    </div>
-    <button class="btn bg" onclick="closeModal('modal-intel')">UNDERSTOOD</button>
-  </div>
+<div id="wc-ov" class="overlay">
+  <h1>WAVE CLEARED</h1>
+  <p id="wc-txt"></p>
+  <p id="wc-cd" style="color:#aaa;font-size:.8rem">Next wave in 3…</p>
 </div>
 
-<!-- CHOICE MODAL -->
-<div id="modal-choice" class="modal">
-  <div class="mbox">
-    <div id="ch-icon" class="m-icon">⚡</div>
-    <div id="ch-title" class="m-title" style="color:var(--Y)"></div>
-    <div id="ch-desc" class="m-desc"></div>
-    <div id="ch-opts" class="m-choices"></div>
-  </div>
+<div id="go-ov" class="overlay">
+  <h1>K.I.A.</h1>
+  <p>YOU WERE ELIMINATED IN ACTION</p>
+  <p>WAVE <span id="go-w" class="hud-g">1</span> &nbsp;·&nbsp; SCORE <span id="go-s" class="hud-g">0</span></p>
+  <button class="ob" onclick="goMenu()">RETURN TO BASE</button>
 </div>
+
+<div id="spop"></div>
 
 <script>
-// ═══════════════════════════════════════════════
-// DATA
-// ═══════════════════════════════════════════════
-
-const OPERATORS = [
-  { id:'ghost', name:'GHOST', cls:'ASSAULT', icon:'🎯',
-    desc:'Close-range specialist. Suppressed M4, door-breach bonus.',
-    stats:{ hp:120, armor:20, str:85, agi:75 },
-    ability:{ name:'BREACH & CLEAR', key:'BREACH', cd:3,
-      desc:'Kick the door — instant suppress all enemies in room.' },
-    primary:'m4a1', secondary:'glock', equip:'frag',
-    bonus:{ cqb:1.3, suppress:true } },
-  { id:'ranger', name:'RANGER', cls:'HEAVY ASSAULT', icon:'🪖',
-    desc:'High HP tank. M249 suppression, slower but devastating.',
-    stats:{ hp:150, armor:40, str:90, agi:55 },
-    ability:{ name:'SUPPRESSION FIRE', key:'SUPPFIRE', cd:2,
-      desc:'Pin all enemies — they cannot take cover for 2 turns.' },
-    primary:'m249', secondary:'deagle', equip:'frag',
-    bonus:{ suppression:true, armorBonus:20 } },
-  { id:'recon', name:'RECON', cls:'RECON / SNIPER', icon:'🔭',
-    desc:'Long-range domination. Barrett M82, drone strike.',
-    stats:{ hp:90, armor:0, str:80, agi:90 },
-    ability:{ name:'DRONE STRIKE', key:'DRONE', cd:4,
-      desc:'Call in precise drone strike — 80 dmg to target.' },
-    primary:'barrett', secondary:'p226', equip:'smoke',
-    bonus:{ longRange:1.5, headshot:0.4 } },
-  { id:'demo', name:'DEMO', cls:'EXPLOSIVES', icon:'💥',
-    desc:'Demolitions expert. SCAR-H, extra explosives, C4 charges.',
-    stats:{ hp:100, armor:30, str:88, agi:65 },
-    ability:{ name:'C4 BREACH', key:'C4', cd:3,
-      desc:'Detonate C4 — destroys all cover, 60 area damage.' },
-    primary:'scar', secondary:'m1911', equip:'c4',
-    bonus:{ explosive:1.6, extraNades:2 } },
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+const WPNS=[
+  {id:'m4',   n:'M4A1',   ma:30, res:120, fr:120, dmg:34, rng:440, t:'auto',  rl:1200, sp:.04, ul:1},
+  {id:'mp5',  n:'MP5K',   ma:35, res:140, fr:80,  dmg:24, rng:280, t:'auto',  rl:900,  sp:.07, ul:1},
+  {id:'r870', n:'R870',   ma:8,  res:32,  fr:750, dmg:20, rng:160, t:'spread',rl:1800, sp:.18, ul:3},
+  {id:'snp',  n:'.50CAL', ma:5,  res:20,  fr:1100,dmg:110,rng:900, t:'bolt',  rl:2200, sp:.01, ul:5},
+  {id:'rpg',  n:'RPG-7',  ma:3,  res:9,   fr:2000,dmg:180,rng:520, t:'expl',  rl:3000, sp:.02, ul:8},
 ];
 
-const WEAPONS = {
-  primary: [
-    { id:'m4a1',   name:'M4A1',    type:'AR',     dmg:35, ammo:30, reserve:90,  rate:'FULL-AUTO',  rng:'ALL RANGE' },
-    { id:'scar',   name:'SCAR-H',  type:'AR',     dmg:50, ammo:25, reserve:75,  rate:'SEMI-AUTO',  rng:'MED-LONG' },
-    { id:'mp5',    name:'MP5-SD',  type:'SMG',    dmg:25, ammo:35, reserve:105, rate:'FULL-AUTO',  rng:'CQB BONUS' },
-    { id:'m249',   name:'M249 SAW',type:'LMG',    dmg:28, ammo:100,reserve:200, rate:'SUPPRESSION',rng:'ALL RANGE' },
-    { id:'barrett',name:'M82 AMR', type:'SNIPER', dmg:90, ammo:10, reserve:30,  rate:'BOLT-ACTION', rng:'LONG RANGE'},
-  ],
-  secondary: [
-    { id:'glock',  name:'GLOCK 17', type:'PISTOL', dmg:20, ammo:17, rate:'SEMI',   rng:'SHORT' },
-    { id:'deagle', name:'DESERT EAGLE', type:'PISTOL', dmg:45, ammo:7,  rate:'SEMI',   rng:'MED' },
-    { id:'p226',   name:'P226 SRD', type:'PISTOL', dmg:22, ammo:15, rate:'SUPPRESSED', rng:'MED' },
-    { id:'m1911',  name:'M1911',    type:'PISTOL', dmg:30, ammo:8,  rate:'SEMI',   rng:'MED' },
-  ],
-  equip: [
-    { id:'frag',   name:'M67 FRAG',     icon:'💣', charges:2, desc:'50-80 area dmg' },
-    { id:'flash',  name:'M84 FLASHBANG',icon:'💥', charges:2, desc:'Suppress all enemies' },
-    { id:'smoke',  name:'SMOKE GRENADE',icon:'🌫', charges:2, desc:'Break line of sight' },
-    { id:'c4',     name:'C4 CHARGE',    icon:'⚡', charges:1, desc:'Destroy cover + 60dmg' },
-    { id:'claymore',name:'CLAYMORE',    icon:'🚨', charges:2, desc:'Auto-trigger on enemy' },
-  ],
+const ETYPES=[
+  {k:'grunt', hp:100,spd:75, r:13,c:'#bb2000',o:'#ff4422',sc:100,dmg:20},
+  {k:'rush',  hp:60, spd:165,r:11,c:'#cc6600',o:'#ff8800',sc:150,dmg:14},
+  {k:'heavy', hp:320,spd:40, r:20,c:'#880000',o:'#bb0000',sc:350,dmg:32},
+  {k:'elite', hp:180,spd:98, r:14,c:'#6600aa',o:'#9900dd',sc:250,dmg:24,sh:true},
+  {k:'jugg',  hp:700,spd:28, r:26,c:'#550011',o:'#880022',sc:1000,dmg:50,boss:true},
+];
+
+const MAPS={
+  shipment:{fl:'#1e2228',walls:[[.08,.12,.13,.1],[.64,.12,.13,.1],[.08,.64,.13,.1],[.64,.64,.13,.1],[.38,.38,.24,.12],[.08,.38,.1,.12],[.7,.38,.1,.12]]},
+  rust:    {fl:'#2c1e14',walls:[[.32,.3,.36,.28],[.04,.04,.1,.15],[.86,.04,.1,.15],[.04,.8,.1,.12],[.86,.8,.1,.12]]},
+  crash:   {fl:'#161820',walls:[[0,.26,.4,.07],[.6,.26,.4,.07],[0,.58,.35,.07],[.65,.58,.35,.07],[.43,.04,.07,.28],[.43,.6,.07,.28]]},
 };
 
-const MISSIONS = [
-  { id:'kingpin', cls:'op1', unlocked:true,
-    loc:'KANDAHAR, AFGHANISTAN', name:'OPERATION: KINGPIN',
-    obj:['Neutralize HVT Commander','Retrieve encrypted intel','Exfil before QRF arrives'],
-    diff:1, stages:4,
-    brief:`INTEL REPORT — 0300 LOCAL TIME\n\nHigh Value Target is located in a fortified compound south of Kandahar. Target is ISAF's most-wanted commander, responsible for the deaths of 47 coalition personnel.\n\nUnit will infil via HAHO at 04:30. Expected resistance: militia external, elite guards internal. HVT has personal bodyguard. Intel device is in command room.\n\nROE: weapons free. Minimize collateral. Exfil before QRF arrives — you have a 12-minute window after first shot.\n\nGood hunting.`,
-    enemies:[
-      [{type:'MILITIA',    hp:35,  dmg:15, acc:.5,  count:3, cover:false}],
-      [{type:'GUARD',      hp:55,  dmg:22, acc:.65, count:2, cover:true},
-       {type:'MILITIA',    hp:35,  dmg:15, acc:.5,  count:1, cover:false}],
-      [{type:'ELITE GUARD',hp:80,  dmg:30, acc:.75, count:2, cover:true}],
-      [{type:'HVT BODYGUARD',hp:100,dmg:35,acc:.7,  count:1, cover:true},
-       {type:'SAMIR KHAN [HVT]',hp:60,dmg:20,acc:.5,count:1,cover:true,boss:true}],
-    ]},
-  { id:'ghostwire', cls:'op2', unlocked:false,
-    loc:'MOSCOW OBLAST, RUSSIA', name:'OPERATION: GHOST WIRE',
-    obj:['Locate defector Dr. Volkov','Extract without compromise','No civilian casualties'],
-    diff:2, stages:5,
-    brief:`EYES ONLY — LEVEL 5 CLEARANCE\n\nDr. Alexei Volkov, former FSB signals officer, has requested asylum and claims to have proof of an imminent attack on NATO infrastructure. The FSB discovered the meeting.\n\nYou have a 6-hour window before the SVR locks down the oblast. Volkov is being held at an FSB black site — coordinates attached. Building schematics indicate 18 personnel: 4 plain-clothes SVR, 10 FSB regulars, 4 Spetsnaz in outer perimeter.\n\nMission is NOT sanctioned. You do not exist. No extraction support if compromised.\n\nVolkov must walk out breathing. Nothing else matters.`,
-    enemies:[
-      [{type:'SVR AGENT',  hp:60,  dmg:25, acc:.65, count:2, cover:false}],
-      [{type:'FSB GUARD',  hp:65,  dmg:28, acc:.7,  count:3, cover:true}],
-      [{type:'SPETSNAZ',   hp:90,  dmg:38, acc:.8,  count:2, cover:true}],
-      [{type:'FSB OFFICER',hp:75,  dmg:32, acc:.75, count:2, cover:true},
-       {type:'SVR AGENT',  hp:60,  dmg:25, acc:.65, count:1, cover:false}],
-      [{type:'SPETSNAZ LT',hp:130, dmg:42, acc:.82, count:1, cover:true, boss:true}],
-    ]},
-  { id:'ironstorm', cls:'op3', unlocked:false,
-    loc:'ALEPPO, SYRIA', name:'OPERATION: IRON STORM',
-    obj:['Destroy chemical weapon cache','Eliminate weapons chief','Survive the extraction'],
-    diff:3, stages:4,
-    brief:`FLASH TRAFFIC — URGENT\n\nNSA intercept confirmed: 40 tons of VX nerve agent stored in a reinforced warehouse complex, Sector 7, Aleppo. Transfer to a delivery system is scheduled in 18 hours.\n\nYour team will fast-rope from MH-60M at grid 447. Resistance is severe — Jabhat guards plus an unknown number of foreign military advisors with heavy weapons including at least one vehicle-mounted DShK.\n\nDestruction of cache requires planting 6 thermite charges at marked locations. Building will collapse. You need to be OUT in under 90 seconds after last charge is set.\n\nChemical threat requires MOPP-2. Move fast. Breathe through your nose.`,
-    enemies:[
-      [{type:'MILITIA',    hp:40,  dmg:18, acc:.55, count:4, cover:false}],
-      [{type:'GUARD',      hp:60,  dmg:25, acc:.68, count:2, cover:true},
-       {type:'SNIPER',     hp:50,  dmg:50, acc:.85, count:1, cover:true}],
-      [{type:'HEAVY GUNNER',hp:120,dmg:40, acc:.65, count:1, cover:false},
-       {type:'GUARD',      hp:60,  dmg:25, acc:.68, count:2, cover:true}],
-      [{type:'WEAPONS CHIEF',hp:150,dmg:45,acc:.78, count:1, cover:true, boss:true},
-       {type:'ELITE GUARD',hp:90,  dmg:35, acc:.78, count:2, cover:true}],
-    ]},
-  { id:'blackout', cls:'op4', unlocked:false,
-    loc:'PYONGYANG, NORTH KOREA', name:'OPERATION: BLACKOUT',
-    obj:['Infiltrate KPA secure facility','Destroy nuclear launch codes','Extract via sea route'],
-    diff:4, stages:6,
-    brief:`MOST SENSITIVE SOURCES AND METHODS\n\nThe DPRK has completed autonomous launch capability. Nuclear codes are stored offline in Facility 31, 3km north of Pyongyang. A narrow 48-hour window exists while the facility undergoes routine maintenance — security is reduced to 40% staffing.\n\nThis is a one-way ticket. Exfil is via underwater SDV to the USS Michigan, 7km offshore. You have 9 hours.\n\nKPA soldiers are well-trained and dangerous. Expect Tier-1 equivalent units protecting the inner sanctum. The facility commander is former Spetsnaz-trained.\n\nIf captured, the US Government will deny all knowledge of this operation.\n\nYou are a ghost. Act like one.`,
-    enemies:[
-      [{type:'KPA SOLDIER', hp:65,  dmg:25, acc:.65, count:3, cover:false}],
-      [{type:'KPA GUARD',   hp:75,  dmg:30, acc:.72, count:3, cover:true}],
-      [{type:'KPA OFFICER', hp:90,  dmg:35, acc:.78, count:2, cover:true}],
-      [{type:'TIER-1 KPA',  hp:110, dmg:40, acc:.82, count:2, cover:true}],
-      [{type:'ELITE GUARD', hp:100, dmg:38, acc:.80, count:3, cover:true}],
-      [{type:"COL. PARK [COMMANDER]",hp:200,dmg:50,acc:.85,count:1,cover:true,boss:true},
-       {type:'TIER-1 KPA',  hp:110, dmg:40, acc:.82, count:2, cover:true}],
-    ]},
-  { id:'nuclear', cls:'op5', unlocked:false,
-    loc:'CLASSIFIED', name:'OPERATION: NUCLEAR OPTION',
-    obj:['[REDACTED]','[REDACTED]','Survive'],
-    diff:5, stages:6,
-    brief:`[REDACTED]\n\n[REDACTED]\n\nThis operation is beyond Top Secret.\n\nYou are the last option.\n\nGod speed.`,
-    enemies:[
-      [{type:'UNKNOWN HVT',hp:80,  dmg:35, acc:.75, count:3, cover:true}],
-      [{type:'SHADOW UNIT', hp:100, dmg:40, acc:.82, count:2, cover:true}],
-      [{type:'SHADOW UNIT', hp:100, dmg:40, acc:.82, count:3, cover:true}],
-      [{type:'HEAVY',       hp:150, dmg:50, acc:.78, count:2, cover:true}],
-      [{type:'SHADOW LT',   hp:180, dmg:55, acc:.85, count:1, cover:true,boss:true},
-       {type:'UNKNOWN HVT', hp:80,  dmg:35, acc:.75, count:2, cover:true}],
-      [{type:'SUBJECT ZERO [BOSS]',hp:350,dmg:65,acc:.88,count:1,cover:true,boss:true}],
-    ]},
-];
+// ─── CANVAS ──────────────────────────────────────────────────────────────────
+const cv=document.getElementById('gc'), cx=cv.getContext('2d');
 
-const COMBAT_EVENTS = [
-  {prob:.15, fn(G){ if(G.enemies.every(e=>e.hp<=0)) return; const t=G.enemies.find(e=>e.hp>0); t.cover=true; combatLog("Enemy takes cover behind barrier.",'levent'); } },
-  {prob:.12, fn(G){ combatLog("Ricochet! Enemy shot sparked off your vest.",'levent'); G.armor=Math.max(0,G.armor-5); } },
-  {prob:.10, fn(G){ combatLog("INTEL: Secondary target spotted — bonus objective.",'linfo'); G.bonusXP+=200; } },
-  {prob:.10, fn(G){ combatLog("FRIENDLY FIRE WARNING — hold your lane.",'levent'); } },
-  {prob:.08, fn(G){ if(G.ammo>0){combatLog("Ammo cache nearby. Topped off.",  'linfo');G.ammo=Math.min(G.wep.ammo,G.ammo+10);} } },
-  {prob:.08, fn(G){ combatLog("Enemy calling for backup — clock is ticking.",'levent'); G.pressure=true; } },
-  {prob:.06, fn(G){ combatLog("HEADSET: 'Multiple tangos on your six. Move.'",'levent'); } },
-  {prob:.06, fn(G){ G.hp=Math.min(G.maxHp, G.hp+10); combatLog("Medic pack found. +10 HP.",'linfo'); } },
-  {prob:.05, fn(G){ combatLog("⚡ KILLSTREAK BONUS! +300 XP",'lkill'); G.score+=300; } },
-];
+function resize(){
+  const a=document.getElementById('game-area');
+  cv.width=a.clientWidth; cv.height=a.clientHeight;
+  if(G&&G.on) buildWalls();
+}
+window.addEventListener('resize',resize);
 
-// ═══════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════
-let P = {}; // player/session state
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let G={on:false};
 
-function newSession() {
-  P = {
-    selectedOp: null,
-    primaryId: null,
-    secondaryId: null,
-    equipId: null,
-    missionIdx: 0,  // which mission
-    stageIdx: 0,    // which stage in mission
+function freshWpns(){return WPNS.map(w=>({...w,ammo:w.ma,reserve:w.res}));}
 
-    hp: 100, maxHp: 100,
-    armor: 0,
-    ammo: 30, reserve: 90,
-    secAmmo: 17,
-    equipCharges: 2,
-    specCd: 0,
+function initState(map){
+  G={
+    on:false, map,
+    wave:1, wTot:8, wKill:0, wSpawn:0,
+    spT:0, spI:1.4, between:false,
+    score:0, streak:0, lifekills:0,
 
-    wep: null, secWep: null, equip: null,
-    inCover: false,
-    enemies: [],
+    px:0,py:0, pface:0,
+    hp:100, maxhp:100,
 
-    score: 0, kills: 0, headshots: 0,
-    killFeed: [],
-    stageComplete: false,
-    missionWon: false,
-    bonusXP: 0,
-    pressure: false,
+    wpns:freshWpns(), wi:0, reloading:false, lastFire:0,
+    nades:3,
 
-    completedMissions: loadCompleted(),
+    uav:false, uavEnd:0,
+    chop:false, chopEnd:0, chopT:0,
+
+    enemies:[], bullets:[], parts:[], hmarks:[], dnums:[],
+    walls:[],
+
+    shX:0,shY:0,shDur:0,shAmt:0,
+    vig:0,
   };
 }
 
-function loadCompleted() {
-  try { return JSON.parse(localStorage.getItem('tier1_completed')||'[]'); } catch(e){ return []; }
-}
-function saveCompleted(id) {
-  try {
-    const c = loadCompleted();
-    if(!c.includes(id)) c.push(id);
-    localStorage.setItem('tier1_completed', JSON.stringify(c));
-  } catch(e){}
-}
-function saveBestScore(score) {
-  try {
-    const prev = parseInt(localStorage.getItem('tier1_best')||'0');
-    if(score > prev) localStorage.setItem('tier1_best', score);
-  } catch(e){}
-}
-function getBestScore() {
-  try { return parseInt(localStorage.getItem('tier1_best')||'0'); } catch(e){ return 0; }
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rn=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const d2=(ax,ay,bx,by)=>Math.hypot(ax-bx,ay-by);
+function circbox(cx,cy,r,w){
+  return d2(cx,cy,cl(cx,w.x,w.x+w.w),cl(cy,w.y,w.y+w.h))<r;
 }
 
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
-const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
-
-// ═══════════════════════════════════════════════
-// AUDIO
-// ═══════════════════════════════════════════════
+// ─── AUDIO ───────────────────────────────────────────────────────────────────
 let AC=null;
-function initAudio(){try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
-function beep(f,d,v=.12,t='square'){
+function initAC(){try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+function bip(f,d,v=.1,t='sawtooth'){
   if(!AC)return;
-  try{
-    const o=AC.createOscillator(),g=AC.createGain();
-    o.connect(g);g.connect(AC.destination);
-    o.type=t;o.frequency.setValueAtTime(f,AC.currentTime);
+  try{const o=AC.createOscillator(),g=AC.createGain();
+    o.connect(g);g.connect(AC.destination);o.type=t;
+    o.frequency.setValueAtTime(f,AC.currentTime);
     g.gain.setValueAtTime(v,AC.currentTime);
     g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);
-    o.start();o.stop(AC.currentTime+d);
-  }catch(e){}
+    o.start();o.stop(AC.currentTime+d);}catch(e){}
 }
-function sfx(type){
-  switch(type){
-    case 'gunshot': beep(180,.08,.2,'sawtooth'); setTimeout(()=>beep(120,.1,.1,'sawtooth'),80); break;
-    case 'burst':   for(let i=0;i<3;i++) setTimeout(()=>beep(160+rnd(-20,20),.06,.15,'sawtooth'),i*90); break;
-    case 'sniper':  beep(90,.25,.25,'sawtooth'); break;
-    case 'pistol':  beep(200,.07,.18,'sawtooth'); break;
-    case 'nade':    beep(80,.3,.25,'sawtooth'); setTimeout(()=>beep(60,.4,.2,'sine'),100); break;
-    case 'hit':     beep(440,.06,.15,'square'); break;
-    case 'kill':    beep(550,.08,.12,'sine'); setTimeout(()=>beep(660,.12,.15,'sine'),100); break;
-    case 'click':   beep(800,.04,.08,'square'); break;
-    case 'alert':   beep(700,.05,.15,'square');setTimeout(()=>beep(700,.05,.15,'square'),160); break;
-    case 'win':     [440,550,660,880].forEach((f,i)=>setTimeout(()=>beep(f,.2,.18,'sine'),i*180)); break;
-    case 'lose':    [300,220,160].forEach((f,i)=>setTimeout(()=>beep(f,.3,.18,'sawtooth'),i*220)); break;
-    case 'reload':  beep(350,.08,.12,'square');setTimeout(()=>beep(450,.06,.1,'square'),120); break;
-    case 'melee':   beep(100,.15,.2,'sawtooth'); break;
-    case 'airstrike': for(let i=0;i<5;i++) setTimeout(()=>beep(60+i*15,.3,.2,'sawtooth'),i*120); break;
+function sfx(t){
+  switch(t){
+    case 'fire':  bip(180,.07,.12,'sawtooth');break;
+    case 'snp':   bip(90,.2,.18,'sawtooth');break;
+    case 'shot':  for(let i=0;i<3;i++)setTimeout(()=>bip(150+rn(-20,20),.07,.1,'sawtooth'),i*18);break;
+    case 'nade':  bip(80,.4,.2,'sawtooth');setTimeout(()=>bip(60,.5,.18,'sine'),100);break;
+    case 'hit':   bip(440,.04,.1,'square');break;
+    case 'kill':  bip(660,.07,.1,'sine');setTimeout(()=>bip(880,.1,.1,'sine'),85);break;
+    case 'rl':    bip(350,.07,.1,'square');setTimeout(()=>bip(450,.06,.08,'square'),120);break;
+    case 'empty': bip(200,.05,.15,'square');break;
+    case 'wave':  [440,550,660].forEach((f,i)=>setTimeout(()=>bip(f,.15,.14,'sine'),i*120));break;
+    case 'over':  [300,220,160].forEach((f,i)=>setTimeout(()=>bip(f,.3,.15,'sawtooth'),i*200));break;
+    case 'str':   bip(550,.1,.14,'sine');setTimeout(()=>bip(770,.14,.14,'sine'),110);break;
+    case 'rpg':   bip(60,.5,.24,'sawtooth');setTimeout(()=>bip(40,.7,.18,'sine'),200);break;
   }
 }
 
-// ═══════════════════════════════════════════════
-// FLASH
-// ═══════════════════════════════════════════════
-function flash(col, alpha=.25) {
-  const el=document.getElementById('flash');
-  el.style.background=col; el.style.opacity=alpha;
-  setTimeout(()=>el.style.opacity=0, 90);
-}
+// ─── INPUT ───────────────────────────────────────────────────────────────────
+let LS={on:false,bx:0,by:0,cx:0,cy:0,id:null};
 
-// ═══════════════════════════════════════════════
-// SCREEN MANAGEMENT
-// ═══════════════════════════════════════════════
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-function closeModal(id){ document.getElementById(id).classList.remove('show'); }
-function showHelp(){ document.getElementById('modal-intel').classList.add('show'); }
+function touchXY(t){const r=cv.getBoundingClientRect();return{x:t.clientX-r.left,y:t.clientY-r.top};}
 
-// ═══════════════════════════════════════════════
-// OPERATOR SELECT
-// ═══════════════════════════════════════════════
-function buildOpGrid() {
-  const grid = document.getElementById('ops-grid');
-  grid.innerHTML = '';
-  OPERATORS.forEach(op => {
-    const div = document.createElement('div');
-    div.className = 'op-card' + (P.selectedOp?.id===op.id?' selected':'');
-    div.innerHTML = `
-      <span class="op-icon">${op.icon}</span>
-      <div class="op-codename" style="color:var(--G)">${op.name}</div>
-      <div class="op-class">${op.cls}</div>
-      <div class="op-stat"><span>HP</span><span style="color:var(--R)">${op.stats.hp}</span></div>
-      <div class="op-stat"><span>ARMOR</span><span style="color:var(--B)">${op.stats.armor}</span></div>
-      <div class="op-stat"><span>STR</span><span style="color:var(--Y)">${op.stats.str}</span></div>
-      <div class="op-ability">◆ ${op.ability.name}<br>${op.ability.desc}</div>`;
-    div.onclick = () => { P.selectedOp = op; sfx('click'); buildOpGrid(); };
-    grid.appendChild(div);
-  });
-}
-
-function confirmOp() {
-  if(!P.selectedOp){ sfx('alert'); return; }
-  sfx('click');
-  buildLoadout();
-  showScreen('sc-loadout');
-}
-
-// ═══════════════════════════════════════════════
-// LOADOUT
-// ═══════════════════════════════════════════════
-function buildLoadout() {
-  P.primaryId = P.selectedOp.primary;
-  P.secondaryId = P.selectedOp.secondary;
-  P.equipId = P.selectedOp.equip;
-
-  const makeBtn = (w, selectedId, onclick) => {
-    const btn = document.createElement('button');
-    btn.className = 'wep-btn' + (w.id===selectedId?' sel':'');
-    btn.innerHTML = `<div class="wep-name">${w.name}</div>
-      <div class="wep-stat">DMG:${w.dmg} · ${w.type} · ${w.ammo}rnd</div>`;
-    btn.onclick = onclick;
-    return btn;
-  };
-
-  const pg = document.getElementById('primary-grid'); pg.innerHTML='';
-  WEAPONS.primary.forEach(w=>{
-    pg.appendChild(makeBtn(w, P.primaryId, ()=>{P.primaryId=w.id;sfx('click');buildLoadout();}));
-  });
-
-  const sg = document.getElementById('secondary-grid'); sg.innerHTML='';
-  WEAPONS.secondary.forEach(w=>{
-    sg.appendChild(makeBtn(w, P.secondaryId, ()=>{P.secondaryId=w.id;sfx('click');buildLoadout();}));
-  });
-
-  const eq = document.getElementById('equip-grid'); eq.innerHTML='';
-  WEAPONS.equip.forEach(e=>{
-    const btn = document.createElement('button');
-    btn.className = 'eq-btn' + (e.id===P.equipId?' sel':'');
-    btn.innerHTML = `${e.icon} ${e.name}<br><span style="color:var(--dim)">${e.desc}</span>`;
-    btn.onclick = ()=>{P.equipId=e.id;sfx('click');buildLoadout();};
-    eq.appendChild(btn);
-  });
-}
-
-function confirmLoadout() {
-  sfx('click');
-  buildMissionList();
-  showScreen('sc-missions');
-}
-
-// ═══════════════════════════════════════════════
-// MISSION LIST
-// ═══════════════════════════════════════════════
-function buildMissionList() {
-  const completed = P.completedMissions;
-  // unlock next mission based on completions
-  MISSIONS.forEach((m,i)=>{ m.unlocked = i===0 || completed.includes(MISSIONS[i-1].id); });
-
-  const list = document.getElementById('missions-list'); list.innerHTML='';
-  MISSIONS.forEach(m => {
-    const div = document.createElement('div');
-    div.className = `mission-card ${m.cls}` + (m.unlocked?'':' locked');
-    const diffStars = '★'.repeat(m.diff)+'☆'.repeat(5-m.diff);
-    const done = completed.includes(m.id) ? ' ✓' : '';
-    div.innerHTML = `
-      <div class="mc-loc">${m.loc}</div>
-      <div class="mc-name" style="color:var(--W)">${m.name}${done}</div>
-      <div class="mc-obj">${m.obj[0]}</div>
-      <div class="mc-diff">DIFFICULTY: <span class="mc-stars">${diffStars}</span></div>
-      ${!m.unlocked?'<span class="lock-icon">🔒</span>':''}`;
-    if(m.unlocked) div.onclick = ()=>{ sfx('click'); loadMission(m); };
-    list.appendChild(div);
-  });
-}
-
-// ═══════════════════════════════════════════════
-// BRIEFING
-// ═══════════════════════════════════════════════
-let briefTyping = null;
-
-function loadMission(mission) {
-  P.missionIdx = MISSIONS.indexOf(mission);
-  P.stageIdx = 0;
-  P.kills = 0; P.headshots = 0; P.score = 0;
-  P.killFeed = []; P.bonusXP = 0; P.pressure = false;
-
-  document.getElementById('brief-loc').textContent = mission.loc;
-  document.getElementById('brief-op-name').textContent = mission.name;
-  document.getElementById('brief-cls').textContent =
-    `AUTHORIZATION: LEVEL ${mission.diff} · ${P.selectedOp.name} — ASSIGNED`;
-
-  const objEl = document.getElementById('obj-items');
-  objEl.innerHTML = mission.obj.map(o=>
-    `<div class="obj-item"><span class="obj-pend">◻</span><span>${o}</span></div>`
-  ).join('');
-
-  // typewriter briefing
-  if(briefTyping) clearInterval(briefTyping);
-  const intel = document.getElementById('brief-intel');
-  intel.innerHTML = '<span class="intel-cursor"></span>';
-  const text = mission.brief;
-  let i = 0;
-  briefTyping = setInterval(()=>{
-    if(i>=text.length){ clearInterval(briefTyping); return; }
-    intel.innerHTML = intel.innerHTML.replace('<span class="intel-cursor"></span>','')
-      + (text[i]==='\\n'?'\n':text[i]) + '<span class="intel-cursor"></span>';
-    i++;
-  }, 18);
-
-  showScreen('sc-brief');
-}
-
-// ═══════════════════════════════════════════════
-// COMBAT INIT
-// ═══════════════════════════════════════════════
-function startMission() {
-  if(briefTyping) clearInterval(briefTyping);
-  if(!AC) initAudio();
-  sfx('click');
-
-  const op = P.selectedOp;
-  const wep = WEAPONS.primary.find(w=>w.id===P.primaryId);
-  const sec = WEAPONS.secondary.find(w=>w.id===P.secondaryId);
-  const eq  = WEAPONS.equip.find(e=>e.id===P.equipId);
-
-  P.hp = op.stats.hp;
-  P.maxHp = op.stats.hp;
-  P.armor = op.stats.armor + (op.bonus.armorBonus||0);
-  P.wep = wep;
-  P.secWep = sec;
-  P.equip = eq;
-  P.ammo = wep.ammo;
-  P.reserve = wep.reserve;
-  P.secAmmo = sec.ammo;
-  P.equipCharges = eq.charges + (op.bonus.extraNades||0);
-  P.specCd = 0;
-  P.inCover = false;
-  P.score = 0;
-
-  // special ability name
-  document.getElementById('spec-name').textContent = op.ability.key;
-  document.getElementById('spec-sub').textContent = op.ability.desc.split('—')[0].trim();
-
-  loadStage();
-  showScreen('sc-combat');
-
-  beep(220,.2,.15,'sine');
-  setTimeout(()=>beep(330,.2,.15,'sine'),200);
-  setTimeout(()=>beep(440,.3,.15,'sine'),400);
-}
-
-function loadStage() {
-  const mission = MISSIONS[P.missionIdx];
-  const stageData = mission.enemies[P.stageIdx];
-  P.enemies = [];
-  stageData.forEach(eType => {
-    for(let i=0;i<eType.count;i++){
-      P.enemies.push({
-        type: eType.type,
-        maxHp: eType.hp,
-        hp: eType.hp,
-        dmg: eType.dmg,
-        acc: eType.acc,
-        cover: eType.cover,
-        boss: !!eType.boss,
-        suppressed: false,
-        id: Math.random(),
-      });
+cv.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  if(!G.on)return;
+  if(!AC)initAC();
+  for(const t of e.changedTouches){
+    const{x,y}=touchXY(t);
+    if(x<cv.width*.46&&!LS.on){
+      LS={on:true,bx:x,by:y,cx:x,cy:y,id:t.identifier};
     }
-  });
-  P.inCover = false;
-  P.stageComplete = false;
+  }
+},{passive:false});
 
-  // stage desc
-  const stageLocs = ['OUTER PERIMETER','CORRIDOR BREACH','INNER COMPOUND','COMMAND ROOM','EXFIL ROUTE','FINAL STAND'];
-  document.getElementById('stage-loc').textContent = stageLocs[P.stageIdx]||'STAGE';
-  document.getElementById('hud-stage').textContent =
-    `STAGE ${P.stageIdx+1}/${mission.enemies.length}`;
+cv.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  for(const t of e.changedTouches)
+    if(t.identifier===LS.id){const{x,y}=touchXY(t);LS.cx=x;LS.cy=y;}
+},{passive:false});
 
-  const logEl = document.getElementById('combat-log');
-  logEl.innerHTML = `<div class="cle"><span class="lsys">━━ ${stageLocs[P.stageIdx]||'STAGE '+(P.stageIdx+1)} ━━</span></div>`;
+cv.addEventListener('touchend',e=>{
+  e.preventDefault();
+  for(const t of e.changedTouches)
+    if(t.identifier===LS.id){LS.on=false;LS.id=null;}
+},{passive:false});
 
-  combatLog(`${P.enemies.length} enemy contacts. ${P.enemies.filter(e=>e.cover).length} in cover.`,'linfo');
-  renderCombat();
+// ─── WALLS ───────────────────────────────────────────────────────────────────
+function buildWalls(){
+  const w=cv.width,h=cv.height,def=MAPS[G.map];
+  G.walls=def.walls.map(([px,py,pw,ph])=>({x:px*w,y:py*h,w:pw*w,h:ph*h}));
 }
 
-// ═══════════════════════════════════════════════
-// COMBAT LOG
-// ═══════════════════════════════════════════════
-function combatLog(msg, cls='lnorm') {
-  const el = document.getElementById('combat-log');
-  const div = document.createElement('div');
-  div.className = 'cle';
-  div.innerHTML = `<span class="${cls}">${msg}</span>`;
-  el.prepend(div);
-  while(el.children.length>40) el.removeChild(el.lastChild);
-}
-
-// ═══════════════════════════════════════════════
-// RENDER COMBAT
-// ═══════════════════════════════════════════════
-function renderCombat() {
-  // HP / Armor bars
-  document.getElementById('bar-hp').style.width = (P.hp/P.maxHp*100)+'%';
-  document.getElementById('val-hp').textContent = Math.ceil(P.hp);
-  document.getElementById('val-hp').style.color = P.hp<30?'var(--R)':P.hp<60?'var(--Y)':'var(--G)';
-  document.getElementById('bar-armor').style.width = (P.armor/80*100)+'%';
-  document.getElementById('val-armor').textContent = Math.ceil(P.armor);
-
-  document.getElementById('hud-ammo').textContent =
-    `${P.wep.name} [${P.ammo}/${P.reserve}]`;
-  document.getElementById('hud-sec-ammo').textContent =
-    `${P.secWep.name} [${P.secAmmo}]`;
-  document.getElementById('hud-equip').textContent =
-    `${P.equip.icon}×${P.equipCharges}`;
-  document.getElementById('hud-score').textContent = 'SCR '+P.score.toLocaleString();
-
-  // cover banner
-  document.getElementById('cover-banner').style.display = P.inCover?'block':'none';
-
-  // special cooldown
-  const specEl = document.getElementById('spec-cd');
-  if(P.specCd>0){
-    specEl.style.display='block';
-    specEl.textContent=`${P.selectedOp.ability.key} COOLDOWN: ${P.specCd} turns`;
-  } else specEl.style.display='none';
-
-  // enemy list
-  const eList = document.getElementById('enemy-list');
-  eList.innerHTML = P.enemies.map(e => {
-    const pct = e.hp/e.maxHp*100;
-    const status = e.hp<=0 ? 'KIA' : e.suppressed?'SUPPRESSED':e.cover?'IN COVER':'EXPOSED';
-    const stCls = e.hp<=0?'down':e.suppressed?'suppressed':e.cover?'cover':'exposed';
-    const nameColor = e.boss?'var(--R)':e.hp<=0?'var(--dim)':'var(--W)';
-    return `<div class="enemy-row">
-      <span class="enemy-name" style="color:${nameColor}">${e.type}</span>
-      <div class="enemy-hp-bar"><div class="enemy-hp-fill" style="width:${pct}%"></div></div>
-      <span class="enemy-status ${stCls}">${e.hp<=0?'KIA':Math.ceil(e.hp)+'HP'} · ${status}</span>
-    </div>`;
-  }).join('');
-
-  // button states
-  document.getElementById('btn-nade').classList.toggle('off', P.equipCharges<=0);
-  document.getElementById('btn-spec').classList.toggle('off', P.specCd>0);
-  document.getElementById('btn-reload').classList.toggle('off', P.reserve<=0 || P.ammo>=P.wep.ammo);
-}
-
-// ═══════════════════════════════════════════════
-// DAMAGE CALC
-// ═══════════════════════════════════════════════
-function calcDmg(baseDmg, bonusMult=1) {
-  const op = P.selectedOp;
-  let dmg = baseDmg;
-  const headshot = Math.random() < (op.bonus.headshot||0.2);
-  if(headshot) { dmg*=2; }
-  dmg *= bonusMult;
-  dmg *= (0.85 + Math.random()*0.3); // variance
-  return { dmg: Math.round(dmg), headshot };
-}
-
-function applyEnemyDmg(enemy, dmg) {
-  const prev = enemy.hp;
-  enemy.hp = Math.max(0, enemy.hp - dmg);
-  if(enemy.hp <= 0 && prev > 0) {
-    P.kills++;
-    P.score += enemy.boss ? 500 : 100;
-    const msg = enemy.boss ?
-      `⚡ BOSS ELIMINATED: ${enemy.type} — +500 XP` :
-      `+ KILL: ${enemy.type}`;
-    combatLog(msg, enemy.boss?'lsys':'lkill');
-    sfx('kill');
-    if(enemy.boss) flash('rgba(255,215,0,.3)');
-    P.killFeed.push(enemy.type);
+// ─── PARTICLES ───────────────────────────────────────────────────────────────
+function part(x,y,col,n=4){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2,s=rn(30,110);
+    G.parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,col,al:1,blast:false});
   }
 }
-
-function enemiesAlive() { return P.enemies.some(e=>e.hp>0); }
-function firstAlive() { return P.enemies.find(e=>e.hp>0); }
-
-// ═══════════════════════════════════════════════
-// ENEMY TURN
-// ═══════════════════════════════════════════════
-function enemyTurn() {
-  P.enemies.forEach(e => {
-    if(e.hp<=0) return;
-    if(e.suppressed){ e.suppressed=false; combatLog(`${e.type} recovers from suppression.`,'ldim'); return; }
-
-    // Enemy decides: if exposed, maybe take cover
-    if(!e.cover && Math.random()<.35 && !P.pressure) {
-      e.cover = true;
-      combatLog(`${e.type} moves to cover.`,'ldim');
-      return;
-    }
-
-    // Enemy shoots
-    if(Math.random() < e.acc) {
-      let dmg = e.dmg * (0.85+Math.random()*.3);
-      if(P.inCover) dmg *= 0.6;
-      if(P.armor > 0) {
-        const blocked = Math.min(P.armor, dmg*0.5);
-        P.armor -= blocked; dmg -= blocked;
-      }
-      P.hp -= dmg;
-      sfx('hit');
-      combatLog(`${e.type} HITS YOU — ${Math.round(dmg)} damage${P.inCover?' [cover reduced]':''}`, 'ldmg');
-      flash('rgba(255,48,48,.2)');
-      if(e.boss && Math.random()<.4) {
-        combatLog(`${e.type}: "You think this is over?!"`, 'levent');
-      }
-    } else {
-      combatLog(`${e.type} fires — MISS.`,'ldim');
-    }
-  });
-  P.inCover = false; // cover expires
-
-  // pressure check
-  if(P.pressure && Math.random()<.4) {
-    const reinforcement = {type:'REINFORCEMENT',hp:60,maxHp:60,dmg:25,acc:.65,cover:false,suppressed:false,id:Math.random()};
-    P.enemies.push(reinforcement);
-    combatLog('⚠ REINFORCEMENTS ARRIVED!',' levent');
-    P.pressure = false;
-  }
-
-  // random combat event
-  COMBAT_EVENTS.forEach(evt => {
-    if(Math.random()<evt.prob) evt.fn(P);
-  });
-
-  if(P.hp<=0) { endMission(false); return; }
-  if(P.specCd>0) P.specCd--;
-
-  renderCombat();
-  if(!enemiesAlive()) advanceStage();
+function explode(x,y){
+  part(x,y,'#ff6600',12);part(x,y,'#ffcc00',6);
+  G.parts.push({x,y,vx:0,vy:0,col:'#ff6600',al:1,blast:true,r:8});
+  doShake(6,.3);
 }
+function dnum(x,y,txt,col='#fff'){G.dnums.push({x,y,vy:-55,txt,col,al:1});}
+function doShake(a,d){G.shAmt=a;G.shDur=d;}
 
-// ═══════════════════════════════════════════════
-// STAGE ADVANCE
-// ═══════════════════════════════════════════════
-function advanceStage() {
-  const mission = MISSIONS[P.missionIdx];
-  P.score += 500;
-  combatLog(`━━ STAGE ${P.stageIdx+1} CLEARED +500 ━━`,'lsys');
-  sfx('win');
-
-  // partial heal between stages
-  const heal = Math.min(20, P.maxHp - P.hp);
-  if(heal>0){ P.hp+=heal; combatLog(`Adrenaline. +${heal} HP.`,'linfo'); }
-
-  P.stageIdx++;
-  if(P.stageIdx >= mission.enemies.length) {
-    endMission(true);
+// ─── FIRE ────────────────────────────────────────────────────────────────────
+function fireat(e,now){
+  const w=G.wpns[G.wi];
+  if(w.ammo<=0){sfx('empty');doReload();return;}
+  if(now-G.lastFire<w.fr)return;
+  G.lastFire=now; w.ammo--; updateHUD();
+  const ang=Math.atan2(e.y-G.py,e.x-G.px);
+  G.pface=ang;
+  if(w.t==='spread'){
+    sfx('shot');
+    for(let i=-3;i<=3;i++) mkbullet(ang+i*.15+(Math.random()-.5)*.05,w.dmg,w.rng,w.t);
+  } else if(w.t==='expl'){
+    sfx('rpg'); mkbullet(ang+(Math.random()-.5)*w.sp,w.dmg,w.rng,w.t);
   } else {
-    setTimeout(()=>loadStage(), 600);
+    sfx(w.t==='bolt'?'snp':'fire'); mkbullet(ang+(Math.random()-.5)*w.sp,w.dmg,w.rng,w.t);
   }
 }
+function mkbullet(a,dmg,rng,t){
+  const spd=t==='bolt'?920:t==='expl'?300:700;
+  G.bullets.push({x:G.px,y:G.py,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,
+    dmg,rng,tr:0,t,col:t==='expl'?'#ff9900':t==='bolt'?'#88ddff':'#ffe880'});
+}
 
-// ═══════════════════════════════════════════════
-// TACTICS (PLAYER ACTIONS)
-// ═══════════════════════════════════════════════
-function tac(type) {
-  if(P.hp<=0) return;
-  if(!enemiesAlive()) return;
-  if(document.getElementById('modal-choice').classList.contains('show')) return;
+function doReload(){
+  if(G.reloading)return;
+  const w=G.wpns[G.wi];
+  if(w.ammo===w.ma||w.reserve<=0)return;
+  G.reloading=true; sfx('rl');
+  document.getElementById('reload-btn').textContent='…';
+  setTimeout(()=>{
+    if(!G.on){G.reloading=false;return;}
+    const n=Math.min(w.ma-w.ammo,w.reserve);
+    w.ammo+=n;w.reserve-=n;G.reloading=false;
+    document.getElementById('reload-btn').textContent='RELOAD';
+    updateHUD();
+  },w.rl);
+}
 
-  switch(type) {
-    case 'fire': {
-      if(P.ammo<=0){ combatLog('EMPTY! Reload or switch to sidearm.','ldmg'); sfx('alert'); return; }
-      sfx(P.wep.type==='SNIPER'?'sniper':P.wep.type==='SMG'?'burst':'gunshot');
-      const target = firstAlive();
-      const coverPenalty = target.cover ? 0.6 : 1;
-      const {dmg, headshot} = calcDmg(P.wep.dmg, coverPenalty);
-      const shots = P.wep.type==='LMG'?3:P.wep.type==='SMG'?2:1;
-      P.ammo = Math.max(0, P.ammo - shots);
-      applyEnemyDmg(target, dmg);
-      if(headshot){ P.headshots++; combatLog(`HEADSHOT! ${target.type} takes ${dmg} damage.`,'lhead'); flash('rgba(255,215,0,.2)'); }
-      else combatLog(`ENGAGE ${target.type}: ${dmg} damage${target.cover?' [cover penalty]':''}.`,'lnorm');
-      if(target.cover && Math.random()<.3){ target.cover=false; combatLog(`Suppressed ${target.type} from cover.`,'linfo'); }
-      break;
-    }
-    case 'cover': {
-      P.inCover = true;
-      combatLog('Taking cover. Incoming damage reduced 40%.',  'linfo');
-      sfx('click');
-      break;
-    }
-    case 'flank': {
-      if(P.ammo<=0){ combatLog('No ammo to flank with.','ldmg'); return; }
-      sfx('burst');
-      const target = firstAlive();
-      const exposed = !target.cover || Math.random()<.5;
-      const {dmg, headshot} = calcDmg(P.wep.dmg, exposed?1.5:0.9);
-      P.ammo = Math.max(0, P.ammo - 2);
-      if(exposed) target.cover = false;
-      applyEnemyDmg(target, dmg);
-      const riskDmg = rnd(10, 25);
-      P.hp -= riskDmg;
-      combatLog(`FLANK! ${target.type} takes ${dmg} dmg. You take ${riskDmg} in return.`, headshot?'lhead':'lnorm');
-      flash('rgba(255,48,48,.1)');
-      sfx('hit');
-      break;
-    }
-    case 'nade': {
-      if(P.equipCharges<=0){ combatLog('No equipment remaining.','ldmg'); return; }
-      sfx('nade');
-      P.equipCharges--;
-      flash('rgba(255,140,0,.3)',.35);
-      const alive = P.enemies.filter(e=>e.hp>0);
-      const eq = P.equip;
-      if(eq.id==='frag'||eq.id==='c4') {
-        let msg = `${eq.name} DETONATED — `;
-        alive.forEach(e=>{
-          const d = rnd(40,80);
-          if(eq.id==='c4') e.cover=false;
-          applyEnemyDmg(e, d);
-          msg += `${e.type} -${d} `;
-        });
-        combatLog(msg,'lgrit');
-        if(eq.id==='c4') combatLog('C4: All cover destroyed.','linfo');
-      } else if(eq.id==='flash') {
-        alive.forEach(e=>{ e.suppressed=true; e.cover=false; });
-        combatLog('FLASHBANG! All enemies suppressed for 1 turn.','linfo');
-      } else if(eq.id==='smoke') {
-        P.inCover = true;
-        combatLog('SMOKE deployed. You advance under cover.','linfo');
-        alive.forEach(e=>{ e.acc=Math.max(.2,e.acc-.2); });
-      } else if(eq.id==='claymore') {
-        const t = firstAlive();
-        if(t){ applyEnemyDmg(t,120); combatLog(`CLAYMORE triggered — ${t.type} destroyed.`,'lkill'); }
+function doNade(){
+  if(G.nades<=0||!G.on)return;
+  G.nades--;document.getElementById('nc').textContent=G.nades;sfx('nade');
+  if(!G.enemies.length)return;
+  const cx=G.enemies.reduce((s,e)=>s+e.x,0)/G.enemies.length;
+  const cy=G.enemies.reduce((s,e)=>s+e.y,0)/G.enemies.length;
+  [0,1,2,3].forEach(i=>setTimeout(()=>{
+    if(!G.on)return;
+    const ex=cx+(Math.random()-.5)*90,ey=cy+(Math.random()-.5)*90;
+    explode(ex,ey);
+    G.enemies.forEach(e=>{
+      if(e.hp>0&&d2(ex,ey,e.x,e.y)<95){
+        const dmg=rn(60,105);e.hp-=dmg;
+        dnum(e.x,e.y-10,dmg,'#ff9900');
+        if(e.hp<=0)killE(e);
       }
-      break;
-    }
-    case 'special': {
-      if(P.specCd>0){ combatLog('Ability on cooldown.','ldmg'); return; }
-      sfx('airstrike');
-      P.specCd = P.selectedOp.ability.cd;
-      flash('rgba(0,255,204,.25)',.3);
-      const op = P.selectedOp;
-      const alive = P.enemies.filter(e=>e.hp>0);
-      if(op.id==='ghost') {
-        alive.forEach(e=>{ e.suppressed=true; e.cover=false; });
-        combatLog('BREACH & CLEAR! All enemies suppressed, cover gone.','lsys');
-      } else if(op.id==='ranger') {
-        alive.forEach(e=>{ e.suppressed=true; });
-        combatLog('SUPPRESSION FIRE! Enemies pinned for 2 turns.','lsys');
-        alive.forEach(e=>{ e.suppressedTurns=2; });
-      } else if(op.id==='recon') {
-        const t = firstAlive();
-        if(t){ applyEnemyDmg(t, 80); combatLog(`DRONE STRIKE: ${t.type} takes 80 direct hit.`,'lsys'); }
-      } else if(op.id==='demo') {
-        alive.forEach(e=>{ e.cover=false; applyEnemyDmg(e,rnd(45,70)); });
-        combatLog('C4 DETONATED! Cover destroyed, massive area damage.','lsys');
+    });
+    G.enemies=G.enemies.filter(e=>e.hp>0);
+  },i*130));
+}
+
+// ─── KILL / STREAK ───────────────────────────────────────────────────────────
+function killE(e){
+  G.streak++;G.lifekills++;G.wKill++;
+  G.score=Math.round(G.score+e.sc*(1+Math.floor(G.streak/5)*.1));
+  sfx('kill'); part(e.x,e.y,e.c,6); dnum(e.x,e.y,'×'+G.streak,'#ffd700');
+  document.getElementById('sv').textContent=G.score;
+  document.getElementById('stv').textContent=G.streak;
+  checkStreak();
+  if(G.wKill>=G.wTot&&!G.enemies.some(en=>en.hp>0)) setTimeout(waveDone,500);
+}
+
+function popup(msg){
+  sfx('str');const el=document.getElementById('spop');
+  el.textContent=msg;el.style.display='block';
+  setTimeout(()=>el.style.display='none',2400);
+}
+
+function checkStreak(){
+  const s=G.lifekills;
+  if(s===5){G.uav=true;G.uavEnd=performance.now()+12000;
+    document.getElementById('streak-alert').style.display='inline';
+    popup('📡 UAV ONLINE — ENEMIES REVEALED');}
+  if(s===7){G.hp=cl(G.hp+50,0,G.maxhp);G.wpns[G.wi].ammo=G.wpns[G.wi].ma;
+    popup('📦 CARE PACKAGE — +50HP FULL AMMO');}
+  if(s===10) airstrike();
+  if(s===15||( s>15&&(s-15)%8===0)){G.chop=true;G.chopEnd=performance.now()+8000;G.chopT=0;
+    popup('🚁 CHOPPER GUNNER — 8 SECONDS');}
+}
+
+function airstrike(){
+  popup('✈️ AIRSTRIKE INBOUND');
+  const cw=cv.width,ch=cv.height;
+  for(let i=0;i<9;i++) setTimeout(()=>{
+    if(!G.on)return;
+    const bx=rn(cw*.1,cw*.9),by=rn(ch*.1,ch*.9);
+    explode(bx,by);
+    G.enemies.forEach(e=>{if(e.hp>0&&d2(bx,by,e.x,e.y)<110){e.hp-=rn(80,140);if(e.hp<=0)killE(e);}});
+    G.enemies=G.enemies.filter(e=>e.hp>0);
+  },i*280);
+}
+
+// ─── SPAWN ───────────────────────────────────────────────────────────────────
+function pickType(){
+  const w=G.wave,pool=[ETYPES[0]];
+  if(w>=2)pool.push(ETYPES[1]);
+  if(w>=3)pool.push(ETYPES[2]);
+  if(w>=4)pool.push(ETYPES[3]);
+  if(w%5===0&&G.wSpawn===0)return ETYPES[4];
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function spawnE(){
+  const tp=pickType();
+  let x,y;
+  if(Math.random()<.5){x=Math.random()<.5?-30:cv.width+30;y=Math.random()*cv.height;}
+  else{x=Math.random()*cv.width;y=Math.random()<.5?-30:cv.height+30;}
+  G.enemies.push({...tp,hp:tp.hp,maxhp:tp.hp,x,y,
+    spd:tp.spd*(1+G.wave*.04),ang:0,lastSh:0,id:Math.random()});
+  G.wSpawn++;
+}
+
+// ─── UPDATE ──────────────────────────────────────────────────────────────────
+function update(dt,now){
+  // shake
+  if(G.shDur>0){G.shDur-=dt;G.shX=(Math.random()-.5)*G.shAmt*2;G.shY=(Math.random()-.5)*G.shAmt*2;}
+  else{G.shX=0;G.shY=0;}
+  if(G.vig>0)G.vig=Math.max(0,G.vig-dt*2.2);
+
+  // UAV expire
+  if(G.uav&&now>G.uavEnd){G.uav=false;document.getElementById('streak-alert').style.display='none';}
+
+  // Chopper
+  if(G.chop){
+    if(now>G.chopEnd){G.chop=false;}
+    else{
+      G.chopT+=dt;
+      if(G.chopT>.18&&G.enemies.length){
+        G.chopT=0;
+        const t=G.enemies[Math.floor(Math.random()*G.enemies.length)];
+        if(t&&t.hp>0){const d=rn(30,55);t.hp-=d;dnum(t.x,t.y-8,d,'#33ccff');part(t.x,t.y,'#33ccff',2);if(t.hp<=0)killE(t);}
       }
-      break;
     }
-    case 'reload': {
-      if(P.reserve<=0){ combatLog('No reserve ammo.','ldmg'); return; }
-      sfx('reload');
-      const needed = P.wep.ammo - P.ammo;
-      const take = Math.min(needed, P.reserve);
-      P.ammo += take; P.reserve -= take;
-      combatLog(`Reloaded. +${take} rounds. [${P.ammo}/${P.reserve}]`,'linfo');
-      break;
+  }
+
+  // Player movement
+  if(LS.on){
+    const dx=LS.cx-LS.bx,dy=LS.cy-LS.by,len=Math.hypot(dx,dy);
+    if(len>6){
+      const f=Math.min(len,62)/62,spd=165*(1+G.wave*.02);
+      const nx=dx/len,ny=dy/len;
+      const r=16;
+      let npx=cl(G.px+nx*spd*f*dt,r,cv.width-r);
+      let npy=cl(G.py+ny*spd*f*dt,r,cv.height-r);
+      let cx2=false,cy2=false;
+      G.walls.forEach(w=>{if(circbox(npx,G.py,r,w))cx2=true;if(circbox(G.px,npy,r,w))cy2=true;});
+      if(!cx2)G.px=npx; if(!cy2)G.py=npy;
     }
-    case 'secondary': {
-      sfx('pistol');
-      const target = firstAlive();
-      const {dmg, headshot} = calcDmg(P.secWep.dmg);
-      applyEnemyDmg(target, dmg);
-      combatLog(`${P.secWep.name}: ${target.type} takes ${dmg}${headshot?' (HEADSHOT!)':''}`, headshot?'lhead':'lnorm');
-      break;
+  }
+
+  // Spawn
+  if(G.wSpawn<G.wTot){G.spT+=dt;if(G.spT>=G.spI){G.spT=0;spawnE();}}
+
+  // Enemies
+  let close=null,closeDist=Infinity;
+  for(let i=G.enemies.length-1;i>=0;i--){
+    const e=G.enemies[i];
+    if(e.hp<=0){G.enemies.splice(i,1);continue;}
+    const edx=G.px-e.x,edy=G.py-e.y,ed=Math.hypot(edx,edy);
+    e.x+=(edx/ed)*e.spd*dt; e.y+=(edy/ed)*e.spd*dt;
+    e.ang=Math.atan2(edy,edx);
+    // wall push
+    G.walls.forEach(w=>{
+      if(circbox(e.x,e.y,e.r,w)){
+        const ccx=w.x+w.w/2,ccy=w.y+w.h/2;
+        const al=Math.hypot(e.x-ccx,e.y-ccy)||1;
+        e.x+=(e.x-ccx)/al*3;e.y+=(e.y-ccy)/al*3;
+      }
+    });
+    // melee
+    if(ed<16+e.r){G.hp-=e.dmg*dt;G.vig=1;doShake(4,.12);if(G.hp<=0){doGameOver();return;}}
+    // elite shoot
+    if(e.sh&&now-e.lastSh>2000){
+      e.lastSh=now;
+      const a=Math.atan2(G.py-e.y,G.px-e.x)+(Math.random()-.5)*.22;
+      G.bullets.push({x:e.x,y:e.y,vx:Math.cos(a)*380,vy:Math.sin(a)*380,dmg:e.dmg*.5,rng:360,tr:0,t:'enemy',col:'#ff00ff',isE:true});
     }
-    case 'melee': {
-      const target = firstAlive();
-      const dist = target.cover ? 'far' : 'close';
-      if(dist==='far') { combatLog('Too far for melee. Close the gap first.','ldmg'); return; }
-      sfx('melee');
-      const instaKill = target.hp < 40 || Math.random()<.25;
-      if(instaKill) {
-        applyEnemyDmg(target, target.hp+1);
-        combatLog(`CQC TAKEDOWN: ${target.type} eliminated instantly.`,'lkill');
-        flash('rgba(0,255,136,.2)');
-        P.score += 150;
+    if(ed<closeDist){closeDist=ed;close=e;}
+  }
+
+  // Auto-fire
+  if(close&&!G.reloading&&closeDist<=G.wpns[G.wi].rng) fireat(close,now);
+
+  // Bullets
+  for(let i=G.bullets.length-1;i>=0;i--){
+    const b=G.bullets[i];
+    b.x+=b.vx*dt;b.y+=b.vy*dt;
+    b.tr+=Math.hypot(b.vx*dt,b.vy*dt);
+    let dead=b.tr>b.rng||b.x<-60||b.x>cv.width+60||b.y<-60||b.y>cv.height+60;
+    if(!dead) G.walls.forEach(w=>{if(b.x>=w.x&&b.x<=w.x+w.w&&b.y>=w.y&&b.y<=w.y+w.h){dead=true;part(b.x,b.y,'#888',2);}});
+    if(!dead){
+      if(b.isE){
+        if(d2(b.x,b.y,G.px,G.py)<16){G.hp-=b.dmg;G.vig=.8;doShake(3,.18);dead=true;sfx('hit');if(G.hp<=0){doGameOver();return;}}
       } else {
-        const d = rnd(30,50);
-        applyEnemyDmg(target, d);
-        const retaliation = rnd(10,20);
-        P.hp -= retaliation;
-        combatLog(`MELEE: ${target.type} takes ${d}. Retaliation: ${retaliation} dmg.`,'lnorm');
+        for(let j=G.enemies.length-1;j>=0;j--){
+          const e=G.enemies[j];if(e.hp<=0)continue;
+          if(d2(b.x,b.y,e.x,e.y)<e.r){
+            if(b.t==='expl'){
+              explode(b.x,b.y);
+              G.enemies.forEach(te=>{if(te.hp>0&&d2(b.x,b.y,te.x,te.y)<100){const d=rn(Math.round(b.dmg*.6),b.dmg);te.hp-=d;dnum(te.x,te.y-10,d,'#ff9900');G.hmarks.push({x:te.x,y:te.y,al:1});if(te.hp<=0)killE(te);}});
+              G.enemies=G.enemies.filter(e=>e.hp>0);
+            } else {
+              e.hp-=b.dmg;dnum(e.x,e.y-8,Math.round(b.dmg),'#fff');
+              G.hmarks.push({x:e.x,y:e.y,al:1});part(e.x,e.y,'#aa2200',3);
+              if(e.hp<=0)killE(e);
+            }
+            dead=true;break;
+          }
+        }
       }
-      break;
     }
+    if(dead)G.bullets.splice(i,1);
   }
 
-  if(P.hp<=0){ endMission(false); return; }
-  renderCombat();
-  if(!enemiesAlive()){ advanceStage(); return; }
-  setTimeout(enemyTurn, 350);
-}
-
-// ═══════════════════════════════════════════════
-// END MISSION
-// ═══════════════════════════════════════════════
-function endMission(win) {
-  P.missionWon = win;
-  P.score += P.bonusXP;
-  if(win){
-    P.score += 1000 + P.headshots*50 + Math.max(0,P.hp)*5;
-    saveCompleted(MISSIONS[P.missionIdx].id);
-    saveBestScore(P.score);
-    sfx('win');
-    flash('rgba(0,255,136,.3)',.4);
-  } else {
-    sfx('lose');
-    flash('rgba(255,48,48,.4)',.5);
+  // Particles
+  for(let i=G.parts.length-1;i>=0;i--){
+    const p=G.parts[i];p.x+=p.vx*dt;p.y+=p.vy*dt;
+    if(p.blast)p.r=Math.min(p.r+85*dt,65);
+    p.al-=dt*(p.blast?2.5:1.6);if(p.al<=0)G.parts.splice(i,1);
   }
-  setTimeout(showDebrief, 600);
+  for(let i=G.dnums.length-1;i>=0;i--){const d=G.dnums[i];d.y+=d.vy*dt;d.al-=dt*1.6;if(d.al<=0)G.dnums.splice(i,1);}
+  for(let i=G.hmarks.length-1;i>=0;i--){G.hmarks[i].al-=dt*5;if(G.hmarks[i].al<=0)G.hmarks.splice(i,1);}
+
+  // HP HUD
+  const hp=cl(G.hp,0,G.maxhp);
+  document.getElementById('hp-fill').style.width=(hp/G.maxhp*100)+'%';
+  document.getElementById('hp-fill').style.background=hp<30?'#ff3333':hp<60?'#ffaa00':'linear-gradient(90deg,#22aa44,#33cc55)';
+  document.getElementById('hp-txt').textContent=Math.ceil(hp);
 }
 
-function showDebrief() {
-  const win = P.missionWon;
-  const mission = MISSIONS[P.missionIdx];
-  const stars = win ? Math.min(3, 1+Math.floor(P.score/2000)) : 0;
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function render(){
+  const w=cv.width,h=cv.height,def=MAPS[G.map];
+  cx.save();cx.translate(G.shX,G.shY);
 
-  document.getElementById('debrief-result').textContent = win?'MISSION SUCCESS':'MISSION FAILED';
-  document.getElementById('debrief-result').style.color = win?'var(--G)':'var(--R)';
-  document.getElementById('debrief-stars').textContent = win?'★'.repeat(stars)+'☆'.repeat(3-stars):'☆☆☆';
+  // Ground + grid
+  cx.fillStyle=def.fl;cx.fillRect(0,0,w,h);
+  cx.strokeStyle='rgba(255,255,255,.025)';cx.lineWidth=1;
+  for(let x=0;x<w;x+=40){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,h);cx.stroke();}
+  for(let y=0;y<h;y+=40){cx.beginPath();cx.moveTo(0,y);cx.lineTo(w,y);cx.stroke();}
 
-  const items=[
-    ['OPERATION', mission.name.replace('OPERATION: ','')],
-    ['OPERATOR',  P.selectedOp.name],
-    ['PRIMARY',   P.wep.name],
-    ['KILLS',     P.kills],
-    ['HEADSHOTS', P.headshots],
-    ['HP REMAINING', Math.ceil(Math.max(0,P.hp))],
-    ['SCORE',     P.score.toLocaleString()],
-    ['BEST EVER', getBestScore().toLocaleString()],
-  ];
-  document.getElementById('debrief-stats').innerHTML = items.map(([l,v])=>
-    `<div class="ds"><span class="ds-lbl">${l}: </span><span class="ds-val">${v}</span></div>`
-  ).join('');
+  // Walls (3D look)
+  G.walls.forEach(wall=>{
+    cx.fillStyle='rgba(0,0,0,.35)';cx.fillRect(wall.x+5,wall.y+5,wall.w,wall.h);
+    cx.fillStyle='#3a4050';cx.fillRect(wall.x,wall.y,wall.w,wall.h);
+    cx.fillStyle='rgba(255,255,255,.07)';cx.fillRect(wall.x,wall.y,wall.w,4);
+    cx.strokeStyle='#505a6a';cx.lineWidth=1.5;cx.strokeRect(wall.x,wall.y,wall.w,wall.h);
+  });
 
-  if(P.killFeed.length) {
-    document.getElementById('kill-feed').innerHTML =
-      '<span style="color:var(--dim);font-size:.6rem;letter-spacing:2px">KILLS</span><br>'+
-      P.killFeed.map(k=>`+ ${k}`).join('<br>');
+  // Particles
+  G.parts.forEach(p=>{
+    cx.save();cx.globalAlpha=Math.max(0,p.al);
+    if(p.blast){
+      const g2=cx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+      g2.addColorStop(0,'rgba(255,200,50,.8)');g2.addColorStop(1,'rgba(255,50,0,0)');
+      cx.fillStyle=g2;cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fill();
+    } else {cx.fillStyle=p.col;cx.fillRect(p.x,p.y,4,4);}
+    cx.restore();
+  });
+
+  // Bullets with glow
+  G.bullets.forEach(b=>{
+    cx.save();cx.globalAlpha=.9;cx.shadowBlur=8;cx.shadowColor=b.col;
+    cx.fillStyle=b.col;cx.beginPath();cx.arc(b.x,b.y,b.t==='bolt'?3:b.t==='expl'?4:2,0,Math.PI*2);cx.fill();
+    if(b.vx||b.vy){
+      const len=b.t==='bolt'?22:9,bv=Math.hypot(b.vx,b.vy);
+      cx.strokeStyle=b.col;cx.lineWidth=b.t==='bolt'?2:1;
+      cx.beginPath();cx.moveTo(b.x,b.y);cx.lineTo(b.x-(b.vx/bv)*len,b.y-(b.vy/bv)*len);cx.stroke();
+    }
+    cx.restore();
+  });
+
+  // Enemies
+  G.enemies.forEach(e=>{
+    if(e.hp<=0)return;
+    cx.save();
+    if(G.uav){cx.strokeStyle='rgba(255,80,80,.28)';cx.lineWidth=1;cx.setLineDash([3,5]);cx.beginPath();cx.arc(e.x,e.y,e.r+14,0,Math.PI*2);cx.stroke();cx.setLineDash([]);}
+    cx.fillStyle=e.c;cx.beginPath();cx.arc(e.x,e.y,e.r,0,Math.PI*2);cx.fill();
+    cx.strokeStyle=e.o;cx.lineWidth=2;cx.stroke();
+    if(e.boss){cx.strokeStyle='rgba(255,100,100,.6)';cx.lineWidth=3;cx.beginPath();cx.arc(e.x,e.y,e.r+7,0,Math.PI*2);cx.stroke();}
+    // facing dot
+    cx.fillStyle='rgba(255,255,255,.55)';cx.beginPath();
+    cx.arc(e.x+Math.cos(e.ang)*e.r*.7,e.y+Math.sin(e.ang)*e.r*.7,3,0,Math.PI*2);cx.fill();
+    // hp bar
+    const bw=e.r*2.6,bx=e.x-bw/2,by=e.y-e.r-11;
+    cx.fillStyle='rgba(0,0,0,.5)';cx.fillRect(bx,by,bw,4);
+    const hp=e.hp/e.maxhp;
+    cx.fillStyle=hp>.5?'#33cc44':hp>.25?'#ffaa00':'#ff3333';
+    cx.fillRect(bx,by,bw*hp,4);
+    cx.restore();
+  });
+
+  // Player
+  cx.save();cx.translate(G.px,G.py);
+  const hpA=(cl(G.hp,0,G.maxhp)/G.maxhp)*Math.PI*2;
+  cx.strokeStyle='rgba(50,200,80,.35)';cx.lineWidth=3;
+  cx.beginPath();cx.arc(0,0,20,-Math.PI/2,-Math.PI/2+hpA);cx.stroke();
+  cx.fillStyle='#33cc55';cx.beginPath();cx.arc(0,0,14,0,Math.PI*2);cx.fill();
+  cx.strokeStyle='#ffffff';cx.lineWidth=2;cx.stroke();
+  cx.strokeStyle='rgba(255,255,255,.8)';cx.lineWidth=3;
+  cx.beginPath();cx.moveTo(0,0);cx.lineTo(Math.cos(G.pface)*19,Math.sin(G.pface)*19);cx.stroke();
+  cx.restore();
+
+  // Hitmarkers
+  G.hmarks.forEach(h=>{
+    cx.save();cx.globalAlpha=h.al;cx.strokeStyle='#fff';cx.lineWidth=2;
+    const s=7;cx.beginPath();cx.moveTo(h.x-s,h.y-s);cx.lineTo(h.x+s,h.y+s);cx.moveTo(h.x+s,h.y-s);cx.lineTo(h.x-s,h.y+s);cx.stroke();cx.restore();
+  });
+
+  // Damage numbers
+  G.dnums.forEach(d=>{
+    cx.save();cx.globalAlpha=d.al;cx.fillStyle=d.col;
+    cx.font='bold 14px Arial Black';cx.textAlign='center';cx.fillText(d.txt,d.x,d.y);cx.restore();
+  });
+
+  // Virtual joystick
+  if(LS.on){
+    const dx=LS.cx-LS.bx,dy=LS.cy-LS.by;
+    const len=Math.min(Math.hypot(dx,dy),62),ang=Math.atan2(dy,dx);
+    cx.save();cx.globalAlpha=.22;cx.strokeStyle='#fff';cx.lineWidth=2;
+    cx.beginPath();cx.arc(LS.bx,LS.by,62,0,Math.PI*2);cx.stroke();
+    cx.globalAlpha=.42;cx.fillStyle='#fff';cx.beginPath();
+    cx.arc(LS.bx+Math.cos(ang)*len,LS.by+Math.sin(ang)*len,22,0,Math.PI*2);cx.fill();
+    cx.restore();
   }
 
-  const nextBtn = document.getElementById('btn-next-mission');
-  const nextIdx = P.missionIdx+1;
-  if(win && nextIdx < MISSIONS.length) {
-    nextBtn.textContent = `NEXT: ${MISSIONS[nextIdx].name.replace('OPERATION: ','')} →`;
-    nextBtn.style.display='block';
-  } else {
-    nextBtn.style.display='none';
+  // Minimap
+  const mw=86,mh=66,mx2=w-mw-8,my2=8;
+  cx.save();cx.globalAlpha=.72;
+  cx.fillStyle='rgba(0,0,0,.7)';cx.strokeStyle='rgba(255,255,255,.18)';cx.lineWidth=1;
+  cx.fillRect(mx2,my2,mw,mh);cx.strokeRect(mx2,my2,mw,mh);
+  const sx=mw/w,sy=mh/h;
+  cx.fillStyle='#3a4050';
+  G.walls.forEach(wl=>cx.fillRect(mx2+wl.x*sx,my2+wl.y*sy,wl.w*sx,wl.h*sy));
+  G.enemies.forEach(e=>{
+    if(e.hp<=0)return;
+    cx.fillStyle=G.uav?'#ff3333':'rgba(255,80,80,.65)';
+    cx.beginPath();cx.arc(mx2+e.x*sx,my2+e.y*sy,2,0,Math.PI*2);cx.fill();
+  });
+  cx.fillStyle='#33cc55';cx.beginPath();cx.arc(mx2+G.px*sx,my2+G.py*sy,3,0,Math.PI*2);cx.fill();
+  cx.restore();
+
+  // Damage vignette
+  if(G.vig>0){
+    const g3=cx.createRadialGradient(w/2,h/2,h*.28,w/2,h/2,h*.72);
+    g3.addColorStop(0,'rgba(255,0,0,0)');g3.addColorStop(1,`rgba(255,0,0,${G.vig*.45})`);
+    cx.fillStyle=g3;cx.fillRect(0,0,w,h);
   }
 
-  document.getElementById('menu-hs').textContent = 'BEST SCORE: '+getBestScore().toLocaleString();
-  showScreen('sc-debrief');
+  cx.restore();
 }
 
-function nextMission() {
-  sfx('click');
-  P.missionIdx++;
-  if(P.missionIdx>=MISSIONS.length) { showScreen('sc-menu'); return; }
-  P.stageIdx = 0;
-  P.kills = 0; P.headshots = 0; P.score = 0; P.killFeed = []; P.bonusXP=0;
-
-  const op = P.selectedOp;
-  P.hp = op.stats.hp;
-  P.maxHp = op.stats.hp;
-  P.armor = op.stats.armor + (op.bonus.armorBonus||0);
-  P.ammo = P.wep.ammo;
-  P.reserve = P.wep.reserve;
-  P.secAmmo = P.secWep.ammo;
-  P.equipCharges = P.equip.charges + (op.bonus.extraNades||0);
-  P.specCd = 0;
-
-  loadMission(MISSIONS[P.missionIdx]);
+// ─── HUD ─────────────────────────────────────────────────────────────────────
+function updateHUD(){
+  const w=G.wpns[G.wi];
+  document.getElementById('ammo-d').textContent=`${w.n} ${w.ammo}/${w.reserve}`;
 }
 
-// ═══════════════════════════════════════════════
-// KEYBOARD
-// ═══════════════════════════════════════════════
-document.addEventListener('keydown', e=>{
-  const k = e.key.toLowerCase();
-  const map = {'1':'fire','2':'cover','3':'flank','4':'nade',
-               '5':'special','6':'reload','7':'secondary','q':'melee'};
-  if(map[k] && document.getElementById('sc-combat').classList.contains('active')) tac(map[k]);
-});
+function buildWpnBtns(){
+  const row=document.getElementById('wpn-row');row.innerHTML='';
+  WPNS.forEach((wd,i)=>{
+    const b=document.createElement('button');b.className='wb';
+    const locked=G.wave<wd.ul;
+    if(locked)b.classList.add('lk');
+    if(i===G.wi)b.classList.add('on');
+    b.textContent=wd.n;
+    b.onclick=()=>{
+      if(locked||G.reloading)return;
+      G.wi=i;G.reloading=false;
+      document.getElementById('reload-btn').textContent='RELOAD';
+      buildWpnBtns();updateHUD();
+    };
+    row.appendChild(b);
+  });
+}
 
-// ═══════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════
-newSession();
-buildOpGrid();
+// ─── WAVE ────────────────────────────────────────────────────────────────────
+function waveDone(){
+  if(G.between||!G.on)return;
+  G.between=true;G.on=false;
+  const bonus=G.wave*500;G.score+=bonus;sfx('wave');
+  document.getElementById('wc-txt').textContent=`Wave ${G.wave} cleared. +${bonus} XP bonus.`;
+  document.getElementById('wc-ov').style.display='flex';
+  let cd=3;
+  const iv=setInterval(()=>{
+    cd--;document.getElementById('wc-cd').textContent=`Next wave in ${cd}…`;
+    if(cd<=0){clearInterval(iv);document.getElementById('wc-ov').style.display='none';nextWave();}
+  },1000);
+}
 
-const hs = getBestScore();
-if(hs>0) document.getElementById('menu-hs').textContent = 'BEST SCORE: '+hs.toLocaleString();
+function nextWave(){
+  G.wave++;G.wTot=8+G.wave*4;G.wKill=0;G.wSpawn=0;
+  G.spI=Math.max(.45,1.4-G.wave*.05);G.enemies=[];G.between=false;G.on=true;
+  G.streak=0;G.lifekills=0;
+  document.getElementById('stv').textContent='0';
+  document.getElementById('wave-txt').textContent=`WAVE ${G.wave}`;
+  G.hp=cl(G.hp+20,0,G.maxhp);
+  buildWpnBtns();
+}
 
-beep(200,.3,.08,'sine');
-setTimeout(()=>beep(280,.2,.08,'sine'),300);
+// ─── GAME OVER ───────────────────────────────────────────────────────────────
+function doGameOver(){
+  if(!G.on)return;
+  G.on=false;sfx('over');
+  const hs=parseInt(localStorage.getItem('ts_hs')||'0');
+  if(G.score>hs)localStorage.setItem('ts_hs',G.score);
+  document.getElementById('go-w').textContent=G.wave;
+  document.getElementById('go-s').textContent=G.score.toLocaleString();
+  document.getElementById('go-ov').style.display='flex';
+  refreshHS();
+}
+
+function refreshHS(){
+  const hs=parseInt(localStorage.getItem('ts_hs')||'0');
+  document.getElementById('hs-disp').textContent=hs>0?`BEST SCORE: ${hs.toLocaleString()}`:'';
+}
+
+function goMenu(){
+  document.getElementById('go-ov').style.display='none';
+  document.getElementById('wc-ov').style.display='none';
+  document.getElementById('menu-ov').style.display='flex';
+  refreshHS();
+}
+
+// ─── GAME LOOP ───────────────────────────────────────────────────────────────
+let lastT=0;
+function loop(now){
+  if(G.on){
+    const dt=Math.min((now-lastT)/1000,.1);
+    lastT=now;update(dt,now);render();
+  } else if(G.map){
+    render(); // keep rendering even when paused (between waves)
+  }
+  requestAnimationFrame(loop);
+}
+
+// ─── START ───────────────────────────────────────────────────────────────────
+function startGame(map){
+  if(!AC)initAC();
+  ['menu-ov','go-ov','wc-ov'].forEach(id=>document.getElementById(id).style.display='none');
+  initState(map);resize();
+  G.px=cv.width/2;G.py=cv.height/2;G.on=true;
+  buildWpnBtns();updateHUD();
+  document.getElementById('sv').textContent='0';
+  document.getElementById('stv').textContent='0';
+  document.getElementById('wave-txt').textContent='WAVE 1';
+  document.getElementById('nc').textContent='3';
+  document.getElementById('streak-alert').style.display='none';
+  document.getElementById('reload-btn').textContent='RELOAD';
+  lastT=performance.now();
+}
+
+resize();
+refreshHS();
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
